@@ -3,9 +3,10 @@ library(dashHtmlComponents)
 library(dashCoreComponents)
 library(dashBootstrapComponents)
 
-app = Dash$new(external_stylesheets = "https://codepen.io/chriddyp/pen/bWLwgP.css")
+app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 
-app$layout(dbcContainer(
+
+app$layout(htmlDiv(
   list(
     # Top screen (logo, years, smiley face)
     dbcRow(
