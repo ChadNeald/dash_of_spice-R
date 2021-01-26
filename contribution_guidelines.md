@@ -1,4 +1,4 @@
-# Contributing to Dash of Spice
+# Contributing to dash_of_spice-R
 
 ## Contribution Prerequisites
 We welcome all contributions and feature requests to this project! All contributors must abide by our [code of conduct](https://github.com/UBC-MDS/dash_of_spice/blob/main/CODE_OF_CONDUCT.md). 
@@ -16,7 +16,7 @@ Check out the issues in our current milestone to get an idea of what's in the wo
 
 ## How to Submit Changes
 If you would like to contribute to our project or fix a bug, you are welcome to follow these steps to make your changes:
-1. Please [open up an issue](https://github.com/UBC-MDS/dash_of_spice/issues) and see the section on posting issues. 
+1. Please [open up an issue](https://github.com/UBC-MDS/dash_of_spice-R/issues) and see the section on posting issues. 
 2. Fork this repository.
 3. Make your changes.
 4. Submit a pull request. Please document your pull request accordingly.
