@@ -74,9 +74,9 @@ app$layout(htmlDiv(
         dbcCol(htmlH1("Map + legend")),
         dbcCol(
           list(
-            htmlH2("Top 10 Countries"),  # table -----------------------------------
+            htmlH2("Top 10 Countries"),  # table -------------------------------
             dashDataTable(
-                 id = "table",
+                 id = "top_5_table",
                  columns = lapply(colnames(df_table),
                                   function(colName){
                                     list(
@@ -84,8 +84,8 @@ app$layout(htmlDiv(
                                       name = colName
                                     )
                                   }),
-                 data = df_to_list(df_table),
-                 style_table = list(width = "70%"),
+                 data_previous = df_to_list(df_table),
+                 style_table = list(width = "80%"),
                  style_cell = list(
                    textAlign = 'center',
                    backgroundColor = '#FFFF00'
@@ -94,7 +94,7 @@ app$layout(htmlDiv(
                    fontWeight = 'bold' 
                  )
             )
-          ) #-----------------------------------------------------------------------
+          )
         )
       )
     ),
@@ -103,8 +103,11 @@ app$layout(htmlDiv(
       list(
         dbcCol(htmlH1("y axis dropdown")),
         dbcCol(htmlH1("line plot (year progression)")),
-        dbcCol(htmlH1("bar chart"),
+        dbcCol(htmlH1("bar chart"), # bar chart---------------------------------
                list(
+                 dccGraph(
+                   id='bar-plot'
+                 )
                )
         )
       )
@@ -118,25 +121,35 @@ app$layout(htmlDiv(
 
 # Slider callback
 app$callback(
-  output = list(output(id = "top_5_table", property = "value")),
-  #output(id = "top_5_table", property = "columns"),
+#  output = list(output(id = "top_5_table", property = "value")),
+  output(id = "top_5_table", property = "data"),
   params = list(input(id = "slider_health", property = "value"),
                 input(id = "slider_free", property = "value"),
                 input(id = "slider_econ", property = "value")),
   function(health_value, free_value, econ_value) {
-    df = read.csv("data/processed/df_tidy.csv")
-    data <- filter(df, Year == 2020)
+#    df = read.csv("data/processed/df_tidy.csv")
+    data <- filter(df, Year == 2020) %>%
+      rename(Rank = Happiness_rank)
     
-    #Measure <- c("Life Expectancy", "Freedom", "GDP_per_capita") # create Measure column
-    #Value <- c(health_value, free_value, econ_value) # create Value column
-    #user_data <- data.frame(Measure, Value) # create user_data dataframe containing the inputted metrics
+    Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita") # create Measure column
+    Value <- c(health_value, free_value, econ_value) # create Value column
+    user_data <- data.frame(Measure, Value) # create user_data dataframe containing the inputted metrics
     
-    #country_df <- user_data[order(-Value)] # sort values in user_data (descending) and put into new dataframe
-    #col_name <- country_df[0,0] # extract the Measure with the highest importance
-    #filtered_data <- data[order(col_name)] # order the data by the Measure
-    #country_list <- filtered_data[0:10, 0] # get the list of ordered countries
     
-    return (data)
+    country_df <- user_data %>% arrange(desc(Value)) # sort values in user_data (descending) and put into new dataframe
+    col_name <- country_df[1,1] # extract the Measure with the highest importance
+    if (col_name == 'Life_expectancy') {
+      filtered_data <- data %>% arrange(desc(Life_expectancy))
+    } else if (col_name == 'Freedom') {
+      filtered_data <- data %>% arrange(desc(Freedom))
+    } else if (col_name == 'GDP_per_capita') {
+      filtered_data <- data %>% arrange(desc(GDP_per_capita))
+    }
+    country_list <- filtered_data %>%
+      select(Rank, Country) %>%
+      slice(1:10)
+    
+    return (country_list)
   }
 )
 
@@ -151,44 +164,20 @@ app$callback(
   }
 )
 
-app$callback(output = list(id = "giraffe", property = "figure"),
-             params = list(input("graphTitle", "value")),
-             function(newTitle) {
-               
-               rand1 <- sample(1:10, 1)
-               
-               rand2 <- sample(1:10, 1)
-               rand3 <- sample(1:10, 1)
-               rand4 <- sample(1:10, 1)
-               
-               x <- c(1,2,3)
-               y <- c(3,6,rand1)
-               y2 <- c(rand2,rand3,rand4)
-               
-               df = data.frame(x, y, y2)
-               
-               list(
-                 data =
-                   list(
-                     list(
-                       x = df$x,
-                       y = df$y,
-                       type = "bar"
-                     ),
-                     list(
-                       x = df$x,
-                       y = df$y2,
-                       type = "scatter",
-                       mode = "lines+markers",
-                       line = list(width = 4)
-                     )
-                   ),
-                 layout = list(title = newTitle)
-               )
-             }
-)
-
-
+# Bar Chart Callback
+#app$callback(
+#  output('bar-plot', 'figure'),
+#  list(input('plot-area', 'selectedData')),
+#  function(selected_data) {
+#    animal_names <- selected_data[[1]] %>% purrr::map_chr('text')
+#    p <- ggplot(msleep %>% filter(name %in% animal_names)) +
+#      aes(y = vore,
+#          fill = vore) +
+#      geom_bar(width = 0.6) +
+#      ggthemes::scale_fill_tableau()
+#    ggplotly(p, tooltip = 'text') %>% layout(dragmode = 'select')
+#  }
+#)
 
 ###################################################################################
 
