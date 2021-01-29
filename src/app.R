@@ -19,18 +19,18 @@ df_table <- df %>%
 df_table
 #-----------------------------------------------------------------
 
-app$layout(
- dbcContainer(
-  htmlDiv( 
+app$layout(htmlDiv( 
   list(
     # Top screen (logo, years, smiley face)
     dbcRow(
       list(
         # Logo
-        dbcCol(htmlH1("Logo")),
+        #dbcCol(htmlImg("assets/logo.png")),
+        #dbcCol(htmlH1("Logo")),
+        dbcCol(dbcCard(dbcCardImg(src="assets/logo.png"), style =list('width' = '10%'))),
         # Title
-        dbcCol(htmlH1("Title")),
-        dbcCol(htmlH1(";)"))
+        dbcCol(htmlH1("The Happiness Navigator")),
+        dbcCol(dbcCard(dbcCardImg(src="assets/smiley.gif"), style =list('width' = '10%')))
       )
     ),
     # Search dropdown row
@@ -72,7 +72,7 @@ app$layout(
               value=5,
               marks=list("0" = "0", "5" = "5", "10" = "10")
             ),
-            htmlButton("Reset", id="reset_button", n_clicks=0)
+            htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow'))
           )
         ),
         dbcCol(htmlH1("Map + legend")),
@@ -118,7 +118,7 @@ app$layout(
       )
     )
   )
-)))
+))
 
 ###################################################################################
 
@@ -154,6 +154,8 @@ app$callback(
     return(country_list)
   }
 )
+
+# Slider callback
 
 # Reset Button Callback, reset back to 5
 app$callback(
@@ -201,6 +203,7 @@ app$callback(
     return(bar_fig)
   }
 )
+
 ###################################################################################
 
 app$run_server(debug = F)
