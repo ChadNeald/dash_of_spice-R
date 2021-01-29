@@ -14,12 +14,14 @@ df <- read.csv("./data/processed/df_tidy.csv")
 df_table <- df %>%
   filter(Year == "2020") %>%
   select(Happiness_rank, Country) %>%
-  filter(Happiness_rank %in% c(1:10)) %>%
+  filter(Happiness_rank %in% c(1:5)) %>%
   rename(Rank = Happiness_rank)
 df_table
 #-----------------------------------------------------------------
 
-app$layout(htmlDiv( 
+app$layout(
+ dbcContainer(
+  htmlDiv( 
   list(
     # Top screen (logo, years, smiley face)
     dbcRow(
@@ -108,14 +110,15 @@ app$layout(htmlDiv(
         dbcCol(htmlH2("bar chart"), # bar chart---------------------------------
                list(
                  dccGraph(
-                   id='bar_plot'
+                   id='bar_plot',
+                   style = list(width = "60%")
                  )
                )
         )
       )
     )
   )
-))
+)))
 
 ###################################################################################
 
@@ -192,7 +195,8 @@ app$callback(
     bar_fig <- ggplot(country_list) +
       aes(y = Country,
           fill = Country) +
-      geom_bar(width = 0.5)
+      geom_bar(width = 0.4)# +
+#      theme(plot.margin = unit(c(2,2,2,2),"cm"))
     
     return(bar_fig)
   }
