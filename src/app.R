@@ -16,10 +16,12 @@ app$layout(htmlDiv(
     dbcRow(
       list(
         # Logo
-        dbcCol(htmlH1("Logo")),
+        #dbcCol(htmlImg("assets/logo.png")),
+        #dbcCol(htmlH1("Logo")),
+        dbcCol(dbcCard(dbcCardImg(src="assets/logo.png"), style =list('width' = '10%'))),
         # Title
-        dbcCol(htmlH1("Title")),
-        dbcCol(htmlH1(";)"))
+        dbcCol(htmlH1("The Happiness Navigator")),
+        dbcCol(dbcCard(dbcCardImg(src="assets/smiley.gif"), style =list('width' = '10%')))
       )
     ),
     # Search dropdown row
@@ -61,7 +63,7 @@ app$layout(htmlDiv(
                   value=5,
                   marks=list("0" = "0", "5" = "5", "10" = "10")
                 ),
-                htmlButton("Reset", id="reset_button", n_clicks=0)
+                htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow'))
               )
         ),
         dbcCol(htmlH1("Map + legend")),
@@ -84,15 +86,15 @@ app$layout(htmlDiv(
 # App Callbacks
 
 # Slider callback
-app$callback(
-  output = list(output(id = "top_5_table", property = "value")),
-                #output(id = "top_5_table", property = "columns"),
-  params = list(input(id = "slider_health", property = "value"),
-                input(id = "slider_free", property = "value"),
-                input(id = "slider_econ", property = "value")),
-  function(health_value, free_value, econ_value) {
-    df = read.csv("data/processed/df_tidy.csv")
-    data <- filter(df, Year == 2020)
+#app$callback(
+#  output = list(output(id = "top_5_table", property = "value")),
+#                #output(id = "top_5_table", property = "columns"),
+#  params = list(input(id = "slider_health", property = "value"),
+#                input(id = "slider_free", property = "value"),
+#                input(id = "slider_econ", property = "value")),
+#  function(health_value, free_value, econ_value) {
+#    df = read.csv("data/processed/df_tidy.csv")
+#    data <- filter(df, Year == 2020)
 
     #Measure <- c("Life Expectancy", "Freedom", "GDP_per_capita") # create Measure column
     #Value <- c(health_value, free_value, econ_value) # create Value column
@@ -103,9 +105,9 @@ app$callback(
     #filtered_data <- data[order(col_name)] # order the data by the Measure
     #country_list <- filtered_data[0:10, 0] # get the list of ordered countries
 
-    return (data)
-  }
-)
+#    return (data)
+#  }
+#)
 
 # Reset Button Callback, reset back to 5
 app$callback(
