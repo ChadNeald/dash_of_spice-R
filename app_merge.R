@@ -9,19 +9,10 @@ library(plotly)
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 
-# for table (top 10 countries skeleton)
-df <- read.csv("./data/processed/df_tidy.csv")
-df_table <- df %>%
-  filter(Year == "2020") %>%
-  select(Happiness_rank, Country) %>%
-  filter(Happiness_rank %in% c(1:5)) %>%
-  rename(Rank = Happiness_rank)
-df_table
-
 render_map <- function(input_df) {
-  map <- plot_ly(df, 
-    type='choropleth', 
-    locations=~Country, 
+  map <- plot_ly(df,
+    type='choropleth',
+    locations=~Country,
     locationmode='country names',
     colorscale = 'Portland',
     zmin = 0,
@@ -34,6 +25,15 @@ render_map <- function(input_df) {
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
                  clickmode = 'event+select', autosize = FALSE, width = 650, height = 450)#, dragmode = 'select')
 }
+
+# for table (top 10 countries skeleton)
+df <- read.csv("./data/processed/df_tidy.csv")
+df_table <- df %>%
+  filter(Year == "2020") %>%
+  select(Happiness_rank, Country) %>%
+  filter(Happiness_rank %in% c(1:5)) %>%
+  rename(Rank = Happiness_rank)
+df_table
 #-----------------------------------------------------------------
 
 app$layout(htmlDiv(
@@ -92,7 +92,7 @@ app$layout(htmlDiv(
             htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow'))
           )
         ),
-        dbcCol(htmlDiv(list(dccGraph(figure=render_map(df))))),
+        dbcCol(htmlDiv(list(dccGraph(figure=render_map(df))),
         dbcCol(
           list(
             htmlH2("Top 10 Countries"),  # table -------------------------------
@@ -135,7 +135,7 @@ app$layout(htmlDiv(
       )
     )
   )
-))
+)
 
 ###################################################################################
 
