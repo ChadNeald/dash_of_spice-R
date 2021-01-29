@@ -3,12 +3,30 @@ library(dashHtmlComponents)
 library(dashCoreComponents)
 library(dashBootstrapComponents)
 library(dplyr)
+library(plotly)
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 
 # for table
 df = read.csv("data/processed/df_tidy.csv")
 df["Delta_happy"] = df["Happiness_score"]
+
+render_map <- function(input_df) {
+  map <- plot_ly(df, 
+    type='choropleth', 
+    locations=~Country, 
+    locationmode='country names',
+    colorscale = 'Portland',
+    zmin = 0,
+    zmax = 10,
+    colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
+    z=~Happiness_score,
+    unselected = list(marker= list(opacity = 0.1)),
+    marker=list(line=list(color = 'black', width=0.2)
+  ))
+  map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
+                 clickmode = 'event+select', autosize = FALSE, width = 650, height = 450)#, dragmode = 'select')
+}
 
 app$layout(htmlDiv( 
   list(
@@ -66,7 +84,8 @@ app$layout(htmlDiv(
                 htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow'))
               )
         ),
-        dbcCol(htmlH1("Map + legend")),
+        dbcCol(htmlDiv(list(dccGraph(figure=render_map(df)))
+     )),
         dbcCol(dccTextarea(id = "top_5_table"))
       )
     ),
@@ -121,5 +140,7 @@ app$callback(
 )
 
 ###################################################################################
+
+
 
 app$run_server(debug = F)
