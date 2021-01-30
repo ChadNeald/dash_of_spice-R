@@ -153,7 +153,7 @@ def sync_country_names(tidy_df):
         r'^Congo$'                 : 'Congo (Kinshasa)',
         r'^Congo.*Demo.*'          : 'Congo (Brazzaville)',
         r'^Cote d.*'               : 'Ivory Coast',
-        r'.*Cyprus.*'              : 'Cyprus',
+        #r'.*Cyprus.*'              : 'Cyprus',
         r'^Hong Kong.*'            : 'Hong Kong',
         r'^Iran.*'                 : 'Iran',
         r'^Korea, R.*'             : 'South Korea',

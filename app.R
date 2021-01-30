@@ -132,7 +132,7 @@ slider_list <- function(){
 }
 
 render_map <- function(input_df) {
-  map <- plot_ly(df, 
+  map <- plot_ly(input_df, 
                  type='choropleth', 
                  locations=~Country, 
                  locationmode='country names',
@@ -275,6 +275,30 @@ app$callback(
   }
 )
 
+# Slider - Map Callback
+app$callback(
+  output = output(id = "map", property = "figure"),
+  params = list(input(id = "slider_health", property = "value"),
+                input(id = "slider_free", property = "value"),
+                input(id = "slider_econ", property = "value"),
+                input(id = "slider_ss", property = "value"),
+                input(id = "slider_gen", property = "value"),
+                input(id = "slider_corr", property = "value")),
+  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
+    data <- filter(df, Year == 2020) %>%
+      rename(Rank = Happiness_rank)
+    
+    measure <- c("Life_expectancy", "Freedom", "GDP_per_capita", "Social_support", "Generosity", "Corruption") # create Measure column
+    value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
+    
+    data <- df_table %>% 
+      select(Country)
+    data[ , "Happiness_score"] <- compute_happiness(value)
+    
+    return(render_map(data))
+  }
+)
+
 # Slider - Bar chart Callback
 app$callback(
   output = output(id = "bar_plot", property = "figure"),
@@ -286,39 +310,17 @@ app$callback(
                 input(id = "slider_corr", property = "value")),
   function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
     data <- filter(df, Year == 2020) %>%
-      rename(Rank = Happiness_rank) %>%
-      mutate(Country=replace(Country, Rank==76, 'North Cyprus'))
+      rename(Rank = Happiness_rank)
     
     measure <- c("Life_expectancy", "Freedom", "GDP_per_capita", "Social_support", "Generosity", "Corruption") # create Measure column
     value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
     
-    #user_data <- data.frame(measure, value) # create user_data dataframe containing the inputted metrics
-    #country_df <- user_data %>% arrange(desc(Value)) # sort values in user_data (descending) and put into new dataframe
     data[ , "Happiness"] <- compute_happiness(value)
     country_list <- data %>%
       arrange(desc(Happiness)) %>% 
       slice(1:10) %>% 
       select(Rank, Country) %>% 
       arrange(Rank)
-      
-    print(country_list)
-      
-    #df_table_update[ , "Happiness"] <- compute_happiness(value)
-    #df_table_update <- df_table_update %>% 
-    #  arrange(desc(Happiness)) %>% 
-    #  slice(1:10)
-    #col_name <- country_df[1,1] # extract the Measure with the highest importance
-    #if (col_name == 'Life_expectancy') {
-    #  filtered_data <- data %>% arrange(desc(Life_expectancy))
-    #} else if (col_name == 'Freedom') {
-    #  filtered_data <- data %>% arrange(desc(Freedom))
-    #} else if (col_name == 'GDP_per_capita') {
-    #  filtered_data <- data %>% arrange(desc(GDP_per_capita))
-    #}
-    #country_list <- filtered_data %>%
-    #  select(Rank, Country) %>%
-    #  slice(1:10) %>%
-    #  arrange(Rank)
 
     bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
       geom_bar(stat="identity") +
