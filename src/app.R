@@ -6,8 +6,23 @@ library(dplyr)
 library(dashTable)
 library(ggplot2)
 library(plotly)
+library(tidyr)
+library(tidyverse)
+library(comprehenr)
+library(purrr)
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
+
+# Load data and find unique country names for drop down
+data_path = "data/processed/df_tidy.csv"
+data_country_plots = read.csv(data_path)
+unique_countries <- data_country_plots %>%
+    select(Country) %>%
+    distinct() %>%
+    pull(1)
+
+# options for drop down country list
+options = to_list(for (c in unique_countries) options = list(label = c, value = c))
 
 # for table (top 10 countries skeleton)
 df <- read.csv("./data/processed/df_tidy.csv")
@@ -75,8 +90,28 @@ slider_list <- function(){
           value=5,
           marks=list("0" = "0", "5" = "5", "10" = "10")
         ),
-        htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow'))
-      )
+        htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow')),
+        dccDropdown(
+          options=list(
+            list(label="Happiness Score", value="Happiness_score"),
+            list(label="GDP Per Capita", value="GDP_per_capita"),
+            list(label="Social Support", value="Social_support"),
+            list(label="Life Expectancy", value="Life_expectancy"),
+            list(label="Freedom", value="Freedom"),
+            list(label="Generosity", value="Generosity"),
+            list(label="Corruption", value="Corruption")
+          ),
+          value = "Freedom",
+          id = "yaxis_feature",
+          style=list(
+            "border-width"= "10",
+            "width" = "200px",
+            "height" = "20px",
+            "margin" = "10px"
+          )
+        )
+        )
+  
 }
 
 
@@ -116,7 +151,21 @@ app$layout(htmlDiv(
     # Search dropdown row
     dbcRow(
       list(
-        dbcCol(htmlH1("Search dropdown"))
+        dbcCol(
+            dccDropdown(
+                options = options,
+                value = list("Canada", "United States"),
+                id = "country_drop_down",
+                multi = TRUE,
+                style=list(
+                "verticalAlign" = "middle",
+                "border-width"= "10",
+                "width" = "75%",
+                "height" = "20px",
+                "margin" = "30px"
+                )
+            ),
+            width = list("size"=5, "offset"=4))
       )
     ),
     # Main screen layout
@@ -124,8 +173,9 @@ app$layout(htmlDiv(
       list(
         dbcCol(
           slider_list()
-        ),
-        dbcCol(htmlDiv(list(dccGraph(figure=render_map(df))))),
+          ),
+        # Add id = map to connect map to country plot
+        dbcCol(htmlDiv(list(dccGraph(id = "map", figure=render_map(df))))),
         dbcCol(
           list(
             htmlH2("Top 10 Countries"),  # table -------------------------------
@@ -156,7 +206,7 @@ app$layout(htmlDiv(
     dbcRow(
       list(
         dbcCol(htmlH1("y axis dropdown")),
-        dbcCol(htmlH1("line plot (year progression)")),
+        dbcCol(dccGraph(id='country_plot')),
         dbcCol(dccGraph(id='bar_plot')
         )
       )
@@ -264,5 +314,36 @@ app$callback(
 
 
 ###################################################################################
+
+# Yearly trends plot
+app$callback(
+  output = output(id = "country_plot", property = "figure"),
+                
+  params = list(input(id = "yaxis_feature", property = "value"),
+                input(id = "country_drop_down", property = "value"),
+                input(id = "map", property = "selectedData")),
+  
+  function(ycol, drop_down_list, selected_data) {
+    # Getting the selected contries from the map into a nice format 
+    map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
+    map_selections <- strsplit(map_selections[[1]], ", ")
+    map_selections <- map_selections[[1]]
+    
+    # Filter by drop down countries and map selection countries
+    plot_data <- data_country_plots %>%
+      filter(Country %in% drop_down_list | Country %in% map_selections)
+    
+    # Remove _'s from y axis name on graph
+    yaxis_title <- strsplit(ycol, "_")
+    yaxis_title <- paste(yaxis_title[[1]], collapse = " ")
+
+    country_plot <- plot_data %>%
+      ggplot(aes(x = Year, color = Country)) +
+          geom_line(aes_string(y = ycol)) +
+          labs(y = yaxis_title, color = "")
+    
+  return (ggplotly(country_plot))
+  }
+)
 
 app$run_server(debug = F)
