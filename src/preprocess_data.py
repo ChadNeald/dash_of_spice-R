@@ -41,6 +41,9 @@ def preprocess_data():
     # Link countries with topojson countries
     df_tidy = sync_country_names(df_tidy)
 
+    # Standardize data metrics
+    df_tidy = standardize_metrics(df_tidy)
+
     # Saving in a csv file
     df_tidy.to_csv("data/processed/df_tidy.csv", index = False)
 
@@ -175,6 +178,47 @@ def sync_country_names(tidy_df):
     combined_df = combined_df.drop(columns = 'name')
     #combined_df['Delta_happy'] = combined_df['Happiness_score']
     return combined_df
+
+def standardize_metrics(df):
+    # Fix the 2020 GDP being in USD
+    df.loc[df['Year'] == 2020, 'GDP_per_capita'] = (df[df['Year'] == 2020]['GDP_per_capita'] - \
+                                                    df[df['Year'] == 2020]['GDP_per_capita'].mean()) / \
+                                                    df[df['Year'] == 2020]['GDP_per_capita'].std()
+
+    # Fix the 2020 life expectancy being in years
+    df.loc[df['Year'] == 2020, 'Life_expectancy'] = (df[df['Year'] == 2020]['Life_expectancy'] - \
+                                                    df[df['Year'] == 2020]['Life_expectancy'].mean()) / \
+                                                    df[df['Year'] == 2020]['Life_expectancy'].std()
+
+    # Collect non-normalized metrics
+    scaled_metrics = df[['GDP_per_capita', 
+                         'Social_support', 
+                         'Life_expectancy', 
+                         'Freedom', 
+                         'Generosity', 
+                         'Corruption']]
+
+    # Normalize all metrics to a z score
+    scaled_metrics = (scaled_metrics.sub(scaled_metrics.mean(axis=0), axis=1) / \
+                     scaled_metrics.mean(axis=0)).round(3)
+
+    # Rename new normalized columns
+    scaled_metrics = scaled_metrics.rename(columns={"GDP_per_capita": "gdp_norm", 
+                                                    "Social_support": "social_norm",
+                                                    "Life_expectancy": "life_norm",
+                                                    "Freedom" : "free_norm",
+                                                    "Generosity" : "gen_norm",
+                                                    "Corruption": "corruption_norm"})
+    df = pd.concat([df, scaled_metrics], axis = 1)
+
+    # Create a new bias column to map linear combination of metrics to happiness
+    df['Country_bias'] = (df['Happiness_score'] - ((10/6) * df[['GDP_per_capita', 
+                                                               'Social_support', 
+                                                               'Life_expectancy', 
+                                                               'Freedom', 
+                                                               'Generosity', 
+                                                               'Corruption']]).sum(axis = 1)).round(3)
+    return df
 
 def validate_inputs():
     assert os.path.exists(input_dir), "Invalid input directory path provided"
