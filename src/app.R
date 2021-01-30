@@ -18,6 +18,68 @@ df_table <- df %>%
   rename(Rank = Happiness_rank)
 df_table
 
+slider_list <- function(){
+      list(
+        htmlH2("Happiness Metrics:"),
+        dbcLabel("Health"),
+        dccSlider(
+          id="slider_health",
+          min=0,
+          max=10,
+          step=1,
+          value=5,
+          marks=list("0" = "0", "5" = "5", "10" = "10")
+        ),
+        dbcLabel("Freedom"),
+        dccSlider(
+          id="slider_free",
+          min=0,
+          max=10,
+          step=1,
+          value=5,
+          marks=list("0" = "0", "5" = "5", "10" = "10")
+        ),
+        dbcLabel("Economy"),
+        dccSlider(
+          id="slider_econ",
+          min=0,
+          max=10,
+          step=1,
+          value=5,
+          marks=list("0" = "0", "5" = "5", "10" = "10")
+        ),
+        dbcLabel("Social support"),
+        dccSlider(
+          id="slider_ss",
+          min=0,
+          max=10,
+          step=1,
+          value=5,
+          marks=list("0" = "0", "5" = "5", "10" = "10")
+        ),
+        dbcLabel("Generosity"),
+        dccSlider(
+          id="slider_gen",
+          min=0,
+          max=10,
+          step=1,
+          value=5,
+          marks=list("0" = "0", "5" = "5", "10" = "10")
+        ),
+        dbcLabel("Corruption"),
+        dccSlider(
+          id="slider_corr",
+          min=0,
+          max=10,
+          step=1,
+          value=5,
+          marks=list("0" = "0", "5" = "5", "10" = "10")
+        ),
+        htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow'))
+      )
+}
+
+
 render_map <- function(input_df) {
   map <- plot_ly(df, 
                  type='choropleth', 
@@ -61,37 +123,7 @@ app$layout(htmlDiv(
     dbcRow(
       list(
         dbcCol(
-          list(
-            htmlH2("Happiness Metrics:"),
-            dbcLabel("Health"),
-            dccSlider(
-              id="slider_health",
-              min=0,
-              max=10,
-              step=1,
-              value=5,
-              marks=list("0" = "0", "5" = "5", "10" = "10")
-            ),
-            dbcLabel("Freedom"),
-            dccSlider(
-              id="slider_free",
-              min=0,
-              max=10,
-              step=1,
-              value=5,
-              marks=list("0" = "0", "5" = "5", "10" = "10")
-            ),
-            dbcLabel("Economy"),
-            dccSlider(
-              id="slider_econ",
-              min=0,
-              max=10,
-              step=1,
-              value=5,
-              marks=list("0" = "0", "5" = "5", "10" = "10")
-            ),
-            htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow'))
-          )
+          slider_list()
         ),
         dbcCol(htmlDiv(list(dccGraph(figure=render_map(df))))),
         dbcCol(
@@ -141,13 +173,16 @@ app$callback(
   output(id = "top_5_table", property = "data"),
   params = list(input(id = "slider_health", property = "value"),
                 input(id = "slider_free", property = "value"),
-                input(id = "slider_econ", property = "value")),
-  function(health_value, free_value, econ_value) {
+                input(id = "slider_econ", property = "value"),
+                input(id = "slider_ss", property = "value"),
+                input(id = "slider_gen", property = "value"),
+                input(id = "slider_corr", property = "value")),
+  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
     data <- filter(df, Year == 2020) %>%
       rename(Rank = Happiness_rank)
     
-    Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita") # create Measure column
-    Value <- c(health_value, free_value, econ_value) # create Value column
+    Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita","Social_support", "Generosity", "Corruption") # create Measure column
+    Value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create Value column
     user_data <- data.frame(Measure, Value) # create user_data dataframe containing the inputted metrics
     
     country_df <- user_data %>% arrange(desc(Value)) # sort values in user_data (descending) and put into new dataframe
@@ -174,10 +209,13 @@ app$callback(
 app$callback(
   output = list(output(id = "slider_health", property = "value"),
                 output(id = "slider_free", property = "value"),
-                output(id = "slider_econ", property = "value")),
+                output(id = "slider_econ", property = "value"),
+                output(id = "slider_ss", property = "value"),
+                output(id = "slider_gen", property = "value"),
+                output(id = "slider_corr", property = "value")),
   params = list(input(id = "reset_button", property = "n_clicks")),
-  function(heath_value, free_value, econ_value) {
-    return (list(5, 5, 5))
+  function(heath_value, free_value, econ_value, ss_value, gen_value, corr_value) {
+    return (list(5, 5, 5, 5, 5, 5))
   }
 )
 
@@ -186,13 +224,16 @@ app$callback(
   output = output(id = "bar_plot", property = "figure"),
   params = list(input(id = "slider_health", property = "value"),
                 input(id = "slider_free", property = "value"),
-                input(id = "slider_econ", property = "value")),
-  function(health_value, free_value, econ_value) {
+                input(id = "slider_econ", property = "value"),
+                input(id = "slider_ss", property = "value"),
+                input(id = "slider_gen", property = "value"),
+                input(id = "slider_corr", property = "value")),
+  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
     data <- filter(df, Year == 2020) %>%
       rename(Rank = Happiness_rank) %>%
       mutate(Country=replace(Country, Rank==76, 'North Cyprus'))
     
-    Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita") # create Measure column
+    Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita", "Social_support", "Generosity", "Corruption") # create Measure column
     Value <- c(health_value, free_value, econ_value) # create Value column
     user_data <- data.frame(Measure, Value) # create user_data dataframe containing the inputted metrics
     country_df <- user_data %>% arrange(desc(Value)) # sort values in user_data (descending) and put into new dataframe
