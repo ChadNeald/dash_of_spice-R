@@ -20,20 +20,21 @@ df_table
 
 render_map <- function(input_df) {
   map <- plot_ly(df, 
-    type='choropleth', 
-    locations=~Country, 
-    locationmode='country names',
-    colorscale = 'Portland',
-    zmin = 0,
-    zmax = 10,
-    colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
-    z=~Happiness_score,
-    unselected = list(marker= list(opacity = 0.1)),
-    marker=list(line=list(color = 'black', width=0.2)
-  ))
+                 type='choropleth', 
+                 locations=~Country, 
+                 locationmode='country names',
+                 colorscale = 'Portland',
+                 zmin = 0,
+                 zmax = 10,
+                 colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
+                 z=~Happiness_score,
+                 unselected = list(marker= list(opacity = 0.1)),
+                 marker=list(line=list(color = 'black', width=0.2)
+                 ))
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
                  clickmode = 'event+select', autosize = FALSE, width = 650, height = 450)#, dragmode = 'select')
 }
+
 #-----------------------------------------------------------------
 
 app$layout(htmlDiv(
@@ -124,13 +125,7 @@ app$layout(htmlDiv(
       list(
         dbcCol(htmlH1("y axis dropdown")),
         dbcCol(htmlH1("line plot (year progression)")),
-        dbcCol(htmlH2("bar chart"), # bar chart---------------------------------
-               list(
-                 dccGraph(
-                   id='bar_plot',
-                   style = list(width = "60%")
-                 )
-               )
+        dbcCol(dccGraph(id='bar_plot')
         )
       )
     )
@@ -150,11 +145,11 @@ app$callback(
   function(health_value, free_value, econ_value) {
     data <- filter(df, Year == 2020) %>%
       rename(Rank = Happiness_rank)
-
+    
     Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita") # create Measure column
     Value <- c(health_value, free_value, econ_value) # create Value column
     user_data <- data.frame(Measure, Value) # create user_data dataframe containing the inputted metrics
-
+    
     country_df <- user_data %>% arrange(desc(Value)) # sort values in user_data (descending) and put into new dataframe
     col_name <- country_df[1,1] # extract the Measure with the highest importance
     if (col_name == 'Life_expectancy') {
@@ -166,8 +161,9 @@ app$callback(
     }
     country_list <- filtered_data %>%
       select(Rank, Country) %>%
-      slice(1:10)
-
+      slice(1:10) %>%
+      arrange(Rank)
+    
     return(country_list)
   }
 )
@@ -187,14 +183,15 @@ app$callback(
 
 # Slider - Bar chart Callback
 app$callback(
-  output(id = "bar_plot", property = "figure"),
+  output = output(id = "bar_plot", property = "figure"),
   params = list(input(id = "slider_health", property = "value"),
                 input(id = "slider_free", property = "value"),
                 input(id = "slider_econ", property = "value")),
   function(health_value, free_value, econ_value) {
     data <- filter(df, Year == 2020) %>%
-      rename(Rank = Happiness_rank)
-
+      rename(Rank = Happiness_rank) %>%
+      mutate(Country=replace(Country, Rank==76, 'North Cyprus'))
+    
     Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita") # create Measure column
     Value <- c(health_value, free_value, econ_value) # create Value column
     user_data <- data.frame(Measure, Value) # create user_data dataframe containing the inputted metrics
@@ -209,17 +206,21 @@ app$callback(
     }
     country_list <- filtered_data %>%
       select(Rank, Country) %>%
-      slice(1:5)
+      slice(1:10) %>%
+      arrange(Rank)
 
-    bar_fig <- ggplot(country_list) +
-      aes(y = Country,
-          fill = Country) +
-      geom_bar(width = 0.4)# +
-#      theme(plot.margin = unit(c(2,2,2,2),"cm"))
-
-    return(bar_fig)
+    bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
+      geom_bar(stat="identity") +
+      labs(fill = "Rank") +
+      scale_fill_gradient2(low="grey", mid="yellow", high="green") +
+      theme_bw() +
+      theme(axis.title.y = element_blank(),
+            panel.border = element_blank())
+    
+    return(ggplotly(bar_fig, tooltip = "label"))
   }
 )
+
 
 ###################################################################################
 
