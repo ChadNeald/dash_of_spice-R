@@ -7,5 +7,4 @@ The majority of our time this milestone has been spent getting back to the same 
 bar plot
 
 ### R vs. Python
-In milestone 2, connecting our map to the line graph proved to be quite difficult. The two objects had to be placed in the same function and treated as one object. Using R and ggplotly however, was  
-
+In milestone 2, connecting our map to the line graph proved to be quite difficult. The two objects had to be placed in the same function and treated as one object. With milestone 3 however, R and ggplotly made the design far easier to implement. Every country selected is simply passed to the graph and handled separately. On top of this, plotly provides a better default map view than altair. One limitation of our previous dashboard was that a user couldn't zoom in and out of the map, but this is now taken care of through plotly.
