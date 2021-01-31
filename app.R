@@ -26,12 +26,29 @@ options = to_list(for (c in unique_countries) options = list(label = c, value = 
 
 # for table (top 10 countries skeleton)
 df <- read.csv("./data/processed/df_tidy.csv")
+
+# Build a matrix for multiplying with slider vectors, 2020 only for now
+df_norm_metrics <- df %>% 
+  filter(Year == "2020") %>% 
+  select(life_norm, free_norm, gdp_norm, social_norm, gen_norm, corruption_norm) %>% 
+  as.matrix()
+
+df_norm_bias <- df %>% 
+  filter(Year == "2020") %>% 
+  select(Country_bias)
+
+df <- df %>% 
+  select(-(gdp_norm:Country_bias))
+
 df_table <- df %>%
   filter(Year == "2020") %>%
-  select(Happiness_rank, Country) %>%
-  filter(Happiness_rank %in% c(1:5)) %>%
-  rename(Rank = Happiness_rank)
-df_table
+  mutate(Happiness = Happiness_score) %>% 
+  select(Happiness, Country)
+
+# Our happiness formula to map the slider changes to the original scores
+compute_happiness <- function(slider_vector) {
+  happiness <- round((10/6)*df_norm_metrics %*% (slider_vector*(6/sum(slider_vector))) + df_norm_bias, 3)
+}
 
 slider_list <- function(){
       list(
@@ -114,9 +131,8 @@ slider_list <- function(){
   
 }
 
-
 render_map <- function(input_df) {
-  map <- plot_ly(df, 
+  map <- plot_ly(input_df, 
                  type='choropleth', 
                  locations=~Country, 
                  locationmode='country names',
@@ -228,28 +244,18 @@ app$callback(
                 input(id = "slider_gen", property = "value"),
                 input(id = "slider_corr", property = "value")),
   function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
-    data <- filter(df, Year == 2020) %>%
-      rename(Rank = Happiness_rank)
     
-    Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita","Social_support", "Generosity", "Corruption") # create Measure column
-    Value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create Value column
-    user_data <- data.frame(Measure, Value) # create user_data dataframe containing the inputted metrics
+    measure <- c("Life_expectancy", "Freedom", "GDP_per_capita","Social_support", "Generosity", "Corruption") # create Measure column
+    value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
     
-    country_df <- user_data %>% arrange(desc(Value)) # sort values in user_data (descending) and put into new dataframe
-    col_name <- country_df[1,1] # extract the Measure with the highest importance
-    if (col_name == 'Life_expectancy') {
-      filtered_data <- data %>% arrange(desc(Life_expectancy))
-    } else if (col_name == 'Freedom') {
-      filtered_data <- data %>% arrange(desc(Freedom))
-    } else if (col_name == 'GDP_per_capita') {
-      filtered_data <- data %>% arrange(desc(GDP_per_capita))
-    }
-    country_list <- filtered_data %>%
-      select(Rank, Country) %>%
-      slice(1:10) %>%
-      arrange(Rank)
+    df_table_update <- df_table %>% 
+      select(Country)
+    df_table_update[ , "Happiness"] <- compute_happiness(value)
+    df_table_update <- df_table_update %>% 
+      arrange(desc(Happiness)) %>% 
+      slice(1:10)
     
-    return(country_list)
+    return(df_table_update)
   }
 )
 
@@ -269,6 +275,30 @@ app$callback(
   }
 )
 
+# Slider - Map Callback
+app$callback(
+  output = output(id = "map", property = "figure"),
+  params = list(input(id = "slider_health", property = "value"),
+                input(id = "slider_free", property = "value"),
+                input(id = "slider_econ", property = "value"),
+                input(id = "slider_ss", property = "value"),
+                input(id = "slider_gen", property = "value"),
+                input(id = "slider_corr", property = "value")),
+  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
+    data <- filter(df, Year == 2020) %>%
+      rename(Rank = Happiness_rank)
+    
+    measure <- c("Life_expectancy", "Freedom", "GDP_per_capita", "Social_support", "Generosity", "Corruption") # create Measure column
+    value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
+    
+    data <- df_table %>% 
+      select(Country)
+    data[ , "Happiness_score"] <- compute_happiness(value)
+    
+    return(render_map(data))
+  }
+)
+
 # Slider - Bar chart Callback
 app$callback(
   output = output(id = "bar_plot", property = "figure"),
@@ -280,24 +310,16 @@ app$callback(
                 input(id = "slider_corr", property = "value")),
   function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
     data <- filter(df, Year == 2020) %>%
-      rename(Rank = Happiness_rank) %>%
-      mutate(Country=replace(Country, Rank==76, 'North Cyprus'))
+      rename(Rank = Happiness_rank)
     
-    Measure <- c("Life_expectancy", "Freedom", "GDP_per_capita", "Social_support", "Generosity", "Corruption") # create Measure column
-    Value <- c(health_value, free_value, econ_value) # create Value column
-    user_data <- data.frame(Measure, Value) # create user_data dataframe containing the inputted metrics
-    country_df <- user_data %>% arrange(desc(Value)) # sort values in user_data (descending) and put into new dataframe
-    col_name <- country_df[1,1] # extract the Measure with the highest importance
-    if (col_name == 'Life_expectancy') {
-      filtered_data <- data %>% arrange(desc(Life_expectancy))
-    } else if (col_name == 'Freedom') {
-      filtered_data <- data %>% arrange(desc(Freedom))
-    } else if (col_name == 'GDP_per_capita') {
-      filtered_data <- data %>% arrange(desc(GDP_per_capita))
-    }
-    country_list <- filtered_data %>%
-      select(Rank, Country) %>%
-      slice(1:10) %>%
+    measure <- c("Life_expectancy", "Freedom", "GDP_per_capita", "Social_support", "Generosity", "Corruption") # create Measure column
+    value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
+    
+    data[ , "Happiness"] <- compute_happiness(value)
+    country_list <- data %>%
+      arrange(desc(Happiness)) %>% 
+      slice(1:10) %>% 
+      select(Rank, Country) %>% 
       arrange(Rank)
 
     bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +

@@ -153,7 +153,7 @@ def sync_country_names(tidy_df):
         r'^Congo$'                 : 'Congo (Kinshasa)',
         r'^Congo.*Demo.*'          : 'Congo (Brazzaville)',
         r'^Cote d.*'               : 'Ivory Coast',
-        r'.*Cyprus.*'              : 'Cyprus',
+        #r'.*Cyprus.*'              : 'Cyprus',
         r'^Hong Kong.*'            : 'Hong Kong',
         r'^Iran.*'                 : 'Iran',
         r'^Korea, R.*'             : 'South Korea',
@@ -212,12 +212,12 @@ def standardize_metrics(df):
     df = pd.concat([df, scaled_metrics], axis = 1)
 
     # Create a new bias column to map linear combination of metrics to happiness
-    df['Country_bias'] = (df['Happiness_score'] - ((10/6) * df[['GDP_per_capita', 
-                                                               'Social_support', 
-                                                               'Life_expectancy', 
-                                                               'Freedom', 
-                                                               'Generosity', 
-                                                               'Corruption']]).sum(axis = 1)).round(3)
+    df['Country_bias'] = (df['Happiness_score'] - (10/6) * df[['gdp_norm', 
+                                                               'social_norm', 
+                                                               'life_norm', 
+                                                               'free_norm', 
+                                                               'gen_norm', 
+                                                               'corruption_norm']].sum(axis = 1)).round(3)
     return df
 
 def validate_inputs():
