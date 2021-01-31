@@ -1,7 +1,7 @@
 # Milestone 3 Reflection
 
 ### Functionality 
-The app continues to allow users to rank features that are most important to them using six sliders for different metrics. These six sliders and their values then update both the world map, and the top ten country list. The map highlights the top five countries listed and keeps the remaining parts of the map faded. Individual countries on the map can be clicked on and this in turn populates the line graph directly below. This line graph shows the yearly trends for selected countries and a selected feature of interest.
+The app continues to allow users to rank features that are most important to them using six sliders for different metrics. These six sliders and their values then update both the world map, and the top ten country list. The map will update by color depending on metrics entered by the user in the sliders. Individual countries on the map can be clicked on and this in turn populates the line graph directly below. This line graph shows the yearly trends for selected countries and a selected feature of interest.
 
 ### Improvements and Addressing Feedback
 In addition to all of the features mentioned in the previous section, we have added a bar chart and an improved ranking algorithm for this iteration. The bar chart gives a nice visual of the top countries and their respective scores while the new algorithm is more refined to allow for a kind of weighted average of the slider values. Previously, the algorithm only looked at the slider with the highest value and updated the top countries accordingly. 
