@@ -358,12 +358,20 @@ app$callback(
     yaxis_title <- strsplit(ycol, "_")
     yaxis_title <- paste(yaxis_title[[1]], collapse = " ")
 
-    country_plot <- plot_data %>%
+country_plot <- plot_data %>%
       ggplot(aes(x = Year, color = Country)) +
           geom_line(aes_string(y = ycol)) +
-          labs(y = yaxis_title, color = "") 
+          labs(y = yaxis_title, color = "")
+    plotly_country <- ggplotly(country_plot)
+    plotly_country <- plotly_country %>%
+      layout(
+        legend = list(
+        orientation = "h"#,
+        #x = -0.5
+      )
+    )
 
-  return (ggplotly(country_plot))
+  return (plotly_country)
   }
 )
 
