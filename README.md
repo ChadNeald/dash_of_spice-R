@@ -16,6 +16,9 @@ On the bottom of the dashboard are a row of distribution plots for each quality 
 ## App Sketch
 
 The final dashboard showing the rankings of the rest of the countries and the bottom 5 countries after scrolling. Clicking on another country will highlight it with the top country, and clicking the arrows in the plots section will display different feature ranks.
+
+<br />
+
 ![Final Dashboard](assets/Screen-Recording-2021-01-30-at-8.gif)
 
 ## What are we doing?
