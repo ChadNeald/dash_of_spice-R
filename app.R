@@ -107,26 +107,7 @@ slider_list <- function(){
           value=5,
           marks=list("0" = "0", "5" = "5", "10" = "10")
         ),
-        htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow')),
-        dccDropdown(
-          options=list(
-            list(label="Happiness Score", value="Happiness_score"),
-            list(label="GDP Per Capita", value="GDP_per_capita"),
-            list(label="Social Support", value="Social_support"),
-            list(label="Life Expectancy", value="Life_expectancy"),
-            list(label="Freedom", value="Freedom"),
-            list(label="Generosity", value="Generosity"),
-            list(label="Corruption", value="Corruption")
-          ),
-          value = "Freedom",
-          id = "yaxis_feature",
-          style=list(
-            "border-width"= "10",
-            "width" = "200px",
-            "height" = "20px",
-            "margin" = "10px"
-          )
-        )
+        htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'yellow'))
         )
   
 }
@@ -150,18 +131,16 @@ render_map <- function(input_df) {
 
 #-----------------------------------------------------------------
 
-app$layout(htmlDiv(
+app$layout(dbcContainer(htmlDiv(
   list(
     # Top screen (logo, years, smiley face)
     dbcRow(
       list(
         # Logo
-        #dbcCol(htmlImg("assets/logo.png")),
-        #dbcCol(htmlH1("Logo")),
-        dbcCol(dbcCard(dbcCardImg(src="assets/logo.png"), style =list('width' = '10%'))),
+        dbcCol(dbcCard(dbcCardImg(src="assets/logo.png"), style =list('width' = '40%')), md=3),
         # Title
-        dbcCol(htmlH1("The Happiness Navigator")),
-        dbcCol(dbcCard(dbcCardImg(src="assets/smiley.gif"), style =list('width' = '10%')))
+        dbcCol(htmlH1("The Happiness Navigator"),style=list("align" = "center"), md=6),
+        dbcCol(dbcCard(dbcCardImg(src="assets/smiley.gif"), style =list('width' = '40%')), md=3)
       )
     ),
     # Search dropdown row
@@ -176,22 +155,22 @@ app$layout(htmlDiv(
                 style=list(
                 "verticalAlign" = "middle",
                 "border-width"= "10",
-                "width" = "75%",
+                "width" = "90%",
                 "height" = "20px",
-                "margin" = "30px"
+                "margin" = "50px"
                 )
             ),
-            width = list("size"=5, "offset"=4))
+            width = list("size"=6, "offset"=3), md=6)
       )
     ),
     # Main screen layout
     dbcRow(
       list(
         dbcCol(
-          slider_list()
+          slider_list(), md=3
           ),
         # Add id = map to connect map to country plot
-        dbcCol(htmlDiv(list(dccGraph(id = "map", figure=render_map(df))))),
+        dbcCol(htmlDiv(list(dccGraph(id = "map", figure=render_map(df)))), md=7),
         dbcCol(
           list(
             htmlH2("Top 10 Countries"),  # table -------------------------------
@@ -205,7 +184,7 @@ app$layout(htmlDiv(
                                  )
                                }),
               data_previous = df_to_list(df_table),
-              style_table = list(width = "80%"),
+              style_table = list(width = "100%"),
               style_cell = list(
                 textAlign = 'center',
                 backgroundColor = '#FFFF00'
@@ -215,20 +194,40 @@ app$layout(htmlDiv(
               )
             )
           )
-        )
+        ,md=2)
       )
     ),
     # Global metrics and individual country plots
     dbcRow(
       list(
-        dbcCol(htmlH1("y axis dropdown")),
+        dbcCol(list(htmlH1("<br/>", style=list("color"="white")),
+        htmlH3("Choose your metric:"),
+        dccDropdown(
+          options=list(
+            list(label="Happiness Score", value="Happiness_score"),
+            list(label="GDP Per Capita", value="GDP_per_capita"),
+            list(label="Social Support", value="Social_support"),
+            list(label="Life Expectancy", value="Life_expectancy"),
+            list(label="Freedom", value="Freedom"),
+            list(label="Generosity", value="Generosity"),
+            list(label="Corruption", value="Corruption")
+          ),
+          value = "Freedom",
+          id = "yaxis_feature",
+          style=list(
+            "border-width"= "10",
+            "width" = "200px",
+            "height" = "20px",
+            "margin" = "30px"
+          )
+        ))),
         dbcCol(dccGraph(id='country_plot')),
         dbcCol(dccGraph(id='bar_plot')
         )
       )
     )
   )
-))
+)))
 
 ###################################################################################
 
@@ -362,8 +361,8 @@ app$callback(
     country_plot <- plot_data %>%
       ggplot(aes(x = Year, color = Country)) +
           geom_line(aes_string(y = ycol)) +
-          labs(y = yaxis_title, color = "")
-    
+          labs(y = yaxis_title, color = "") 
+
   return (ggplotly(country_plot))
   }
 )
