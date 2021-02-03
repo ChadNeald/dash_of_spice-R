@@ -136,16 +136,16 @@ render_map <- function(input_df) {
 #-----------------------------------------------------------------
 
 app$layout(
-  dbcContainer(
+  htmlDiv(
     list(
       dbcRow(
         list(
           # Logo
-          htmlImg(src="assets/logo.png", style =list('width' = '5%')),
+          htmlImg(src="assets/logo.png", style =list('width' = '5%', 'position' = 'relative', 'left' = '3%')),
           # Title
-          htmlH3(" The Happiness Navigator ",style=list('align' = 'center', 'position' = 'relative', 'left' = '30%', 'border' = '7px white solid', 'border-style' = 'none none dashed')),          
+          htmlH1(" The Happiness Navigator ",style=list('align' = 'center', 'position' = 'relative', 'left' = '30%', 'border' = '7px white solid', 'border-style' = 'none none dashed')),          
           # Smiley
-          htmlImg(src="assets/smiley.gif", style =list('width' = '5%', 'height' = '10%', 'position' = 'relative', 'left' = '63%', 'top' = '-4px'))
+          htmlImg(src="assets/smiley.gif", style =list('width' = '5%', 'height' = '10%', 'position' = 'relative', 'left' = '57%', 'top' = '-4px'))
         ),
         style = list(padding = '0%', height = '10%', backgroundColor = '#ffd803b9', 'min-width' = 'unset', display='flex', 'vertical-align' = 'top')
       ),
@@ -159,9 +159,10 @@ app$layout(
                         href = 'https://github.com/UBC-MDS/dash_of_spice-R',
                         style = list(width = '10%', height = '10%')),
                   htmlBr(),
+                  htmlBr(),
                   htmlH2("Dash Of Spice", style=list(color = 'white')),
                   htmlBr(),
-                  htmlP(paste("Description: Write something here about how the app works. Blah blah baloney baloney cheese and macaroni. :-)")),
+                  htmlP(paste("Description: Write something here about how the app works. Blah blah baloney baloney cheese and macaroni. :-) The map is my true demise. There's a giant white box border surrounding it which is why nothing else fits into my grid layout. I think it's starting to look better with the more I write. Maybe we can fill this spot in with cute images. I learned how to insert html images today. The world is our oyster!")),
                   htmlBr(),
                   dbcCol(
                     slider_list()
@@ -169,7 +170,7 @@ app$layout(
                 )
               )
             ), 
-            style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '30%', 'height' = '100%', 'border' = '20px white solid')
+            style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '25%', 'height' = '100%', 'border' = '40px white solid')
           ),
           dbcCol(
             list(
@@ -190,25 +191,19 @@ app$layout(
                     )
                     )
                   )  
-                ), style = list('position' = 'relative', 'right' = '20%', 'bottom' = '2%')
+                ), style = list('position' = 'relative', 'right' = '20%', 'bottom' = '40px')
               ),
               dbcRow(
                 htmlDiv(
                   list(
-                    dccGraph(id = "map", figure=render_map(df), style = list('position' = 'relative', 'width' = '50%', 'height' = '50%', 'top' = '10%'))
+                    dccGraph(id = "map", figure=render_map(df), style = list('position' = 'relative', 'width' = '50%', 'height' = '45%', 'bottom' = '55px', 'padding' = 0))
                   )
                 )
               ),
               dbcRow(
                 htmlDiv(
                   list(
-                    htmlH3("Choose your metrics:")
-                  )
-                )
-              ),
-              dbcRow(
-                htmlDiv(
-                  list(
+                    htmlH4("Choose your metrics:", style = list('position' = 'relative')),
                     dccDropdown(
                       options=list(
                       list(label="Happiness Score", value="Happiness_score"),
@@ -225,12 +220,15 @@ app$layout(
                       "border-width"= "10",
                       "width" = "200px",
                       "height" = "20px",
-                      "margin" = "30px"
+                      #"margin" = "30px",
+                      'position' = 'relative',
+                      'bottom' = '20px',
+                      'left' = '130px'
                     )
                   ),
-                  dccGraph(id='country_plot', style = list('width' = 500, 'height' = '500'))
+                  dccGraph(id='country_plot', style = list('width' = 460, 'height' = '300'))
                 )
-              )
+              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'bottom' = '30px')
             )
           )
         ),
@@ -250,7 +248,7 @@ app$layout(
                       )
                     }),
                   data_previous = df_to_list(df_table),
-                  style_table = list(width = "100%"),
+                  style_table = list(width = "250px"),
                   style_cell = list(
                     textAlign = 'center',
                     backgroundColor = '#ffd803b9'
@@ -260,17 +258,16 @@ app$layout(
                     )
                     )
                   )
-                )#,
-                #style = list('position' = 'relative')
+                ), style = list('position' = 'relative', 'left' = '100px')
               ),
               dbcRow(
                 htmlDiv(
                   list(
-                    dccGraph(id='bar_plot', style = list('width' = '85%', 'height' = '90%'))
+                    dccGraph(id='bar_plot', style = list('width' = '80%', 'height' = '80%'))
                   )
-                )
+                ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'position' = 'relative', 'top' = '30px', 'left' = '30px')
               )
-            ), style = list('position' = 'relative', 'left' = '15%', 'width' = '10%', 'height' = '10%')
+            )#, style = list('position' = 'relative', 'left' = '15%', 'width' = '10%', 'height' = '10%')
           )
         )
       )
