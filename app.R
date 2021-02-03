@@ -113,6 +113,8 @@ slider_list <- function(){
 }
 
 render_map <- function(input_df) {
+  test <- input_df %>%
+    filter(Country == "Mexico" | Country == "China" | Country == "Chad")
   map <- plot_ly(input_df, 
                  type='choropleth', 
                  locations=~Country, 
@@ -127,6 +129,8 @@ render_map <- function(input_df) {
                  ))
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
                  clickmode = 'event+select', autosize = FALSE, width = 650, height = 450)#, dragmode = 'select')
+  
+  
 }
 
 #-----------------------------------------------------------------
@@ -166,9 +170,7 @@ app$layout(dbcContainer(htmlDiv(
     # Main screen layout
     dbcRow(
       list(
-        dbcCol(
-          slider_list(), md=3
-          ),
+        dbcCol(slider_list(), md=3),
         # Add id = map to connect map to country plot
         dbcCol(htmlDiv(list(dccGraph(id = "map", figure=render_map(df)))), md=7),
         dbcCol(
@@ -375,5 +377,5 @@ country_plot <- plot_data %>%
   }
 )
 
-#app$run_server(debug = F)
-app$run_server(host = '0.0.0.0') # for deploying on heroku
+app$run_server(debug = TRUE)
+#app$run_server(host = '0.0.0.0') # for deploying on heroku
