@@ -1,7 +1,7 @@
 """
 Author: Dash-of-Spice
 
-Date: Jan. 22, 2020
+Date: Jan. 22, 2021
 
 Preprocess raw happiness datasets
 
@@ -9,14 +9,14 @@ Usage: preprocess_data.py -i=<input> -o=<output> [-v]
 
 Options:
 -i <input>, --input <input>     Local raw data csv file directory
--o <output>, --output <output>  Local output filename and path for preprocessed csv
+-o <output>, --output <output>  Local output path for preprocessed .csv and .pkl
 [-v]                            Report verbose output of dataset retrieval process
 """
 import os
 import glob
 import pandas as pd
 import numpy as np
-from datetime import datetime
+import pickle
 from docopt import docopt
 args = docopt(__doc__)
 
@@ -41,11 +41,11 @@ def preprocess_data():
     # Link countries with topojson countries
     df_tidy = sync_country_names(df_tidy)
 
-    # Standardize data metrics
-    df_tidy = standardize_metrics(df_tidy)
-
     # Saving in a csv file
-    df_tidy.to_csv("data/processed/df_tidy.csv", index = False)
+    df_tidy.to_csv(output_dir + "/df_tidy.csv", index = False)
+
+    # Saving as pickle dump
+    df_tidy.to_pickle(output_dir + "tidy_happy.pkl")
 
     print("\n##### preprocess_data: Finished preprocessing")
 
@@ -53,32 +53,32 @@ def wrangle_year_df(year_df, year):
     # Unfortunately all the year data csvs have different #'s of columns and names...
     drop_columns_list = []
     if year == '2015':
-        rename_columns_map = {"Happiness Rank": "Happiness_rank", 
-                              "Happiness Score": "Happiness_score",
+        rename_columns_map = {"Happiness Rank": "Rank", 
+                              "Happiness Score": "Happiness",
                               "Economy (GDP per Capita)": "GDP_per_capita", 
                               "Family": "Social_support",
                               "Health (Life Expectancy)": "Life_expectancy",
                               "Trust (Government Corruption)": "Corruption"}
     elif year == '2016':
         drop_columns_list.append([1, 4, 5, 12])
-        rename_columns_map = {"Happiness Rank": "Happiness_rank", 
-                              "Happiness Score": "Happiness_score",
+        rename_columns_map = {"Happiness Rank": "Rank", 
+                              "Happiness Score": "Happiness",
                               "Economy (GDP per Capita)": "GDP_per_capita", 
                               "Family": "Social_support",
                               "Health (Life Expectancy)": "Life_expectancy",
                               "Trust (Government Corruption)": "Corruption"}
     elif year == '2017':
         drop_columns_list.append([3, 4, 11])
-        rename_columns_map = {"Happiness.Rank": "Happiness_rank", 
-                              "Happiness.Score": "Happiness_score",
+        rename_columns_map = {"Happiness.Rank": "Rank", 
+                              "Happiness.Score": "Happiness",
                               "Economy..GDP.per.Capita.": "GDP_per_capita", 
                               "Family": "Social_support",
                               "Health..Life.Expectancy.": "Life_expectancy",
                               "Trust..Government.Corruption.": "Corruption"}
     elif year == '2018':
-        rename_columns_map = {"Overall rank": "Happiness_rank", 
+        rename_columns_map = {"Overall rank": "Rank", 
                               "Country or region": "Country", 
-                              "Score": "Happiness_score",
+                              "Score": "Happiness",
                               "GDP per capita": "GDP_per_capita", 
                               "Social support": "Social_support",
                               "Healthy life expectancy": "Life_expectancy", 
@@ -86,9 +86,9 @@ def wrangle_year_df(year_df, year):
                               "Generosity": "Generosity", 
                               "Perceptions of corruption": "Corruption"}
     elif year == '2019':
-        rename_columns_map = {"Overall rank": "Happiness_rank", 
+        rename_columns_map = {"Overall rank": "Rank", 
                               "Country or region": "Country", 
-                              "Score": "Happiness_score",
+                              "Score": "Happiness",
                               "GDP per capita": "GDP_per_capita", 
                               "Social support": "Social_support",
                               "Healthy life expectancy": "Life_expectancy", 
@@ -98,9 +98,9 @@ def wrangle_year_df(year_df, year):
     elif year == '2020':
         drop_columns_list.append([1, 3, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19])
         # Adding the `Happiness_rank` column in 2020.csv
-        year_df['Happiness_rank'] = range(1, 154)
+        year_df['Rank'] = range(1, 154)
         rename_columns_map = {"Country name": "Country", 
-                              "Ladder score": "Happiness_score",
+                              "Ladder score": "Happiness",
                               "Logged GDP per capita": "GDP_per_capita", 
                               "Social support": "Social_support",
                               "Healthy life expectancy": "Life_expectancy", 
@@ -124,8 +124,8 @@ def wrangle_year_df(year_df, year):
 
     # Standardizing column ordering
     year_df = year_df[['Country', 
-                       'Happiness_rank', 
-                       'Happiness_score',
+                       'Rank', 
+                       'Happiness',
                        'GDP_per_capita', 
                        'Social_support', 
                        'Life_expectancy',
@@ -176,59 +176,17 @@ def sync_country_names(tidy_df):
     country_ids = country_ids.replace(regex = country_mapper)
     combined_df = tidy_df.merge(country_ids, left_on = "Country", right_on = 'name')
     combined_df = combined_df.drop(columns = 'name')
-    #combined_df['Delta_happy'] = combined_df['Happiness_score']
     return combined_df
-
-def standardize_metrics(df):
-    # Fix the 2020 GDP being in USD
-    df.loc[df['Year'] == 2020, 'GDP_per_capita'] = (df[df['Year'] == 2020]['GDP_per_capita'] - \
-                                                    df[df['Year'] == 2020]['GDP_per_capita'].mean()) / \
-                                                    df[df['Year'] == 2020]['GDP_per_capita'].std()
-
-    # Fix the 2020 life expectancy being in years
-    df.loc[df['Year'] == 2020, 'Life_expectancy'] = (df[df['Year'] == 2020]['Life_expectancy'] - \
-                                                    df[df['Year'] == 2020]['Life_expectancy'].mean()) / \
-                                                    df[df['Year'] == 2020]['Life_expectancy'].std()
-
-    # Collect non-normalized metrics
-    scaled_metrics = df[['GDP_per_capita', 
-                         'Social_support', 
-                         'Life_expectancy', 
-                         'Freedom', 
-                         'Generosity', 
-                         'Corruption']]
-
-    # Normalize all metrics to a z score
-    scaled_metrics = (scaled_metrics.sub(scaled_metrics.mean(axis=0), axis=1) / \
-                     scaled_metrics.mean(axis=0)).round(3)
-
-    # Rename new normalized columns
-    scaled_metrics = scaled_metrics.rename(columns={"GDP_per_capita": "gdp_norm", 
-                                                    "Social_support": "social_norm",
-                                                    "Life_expectancy": "life_norm",
-                                                    "Freedom" : "free_norm",
-                                                    "Generosity" : "gen_norm",
-                                                    "Corruption": "corruption_norm"})
-    df = pd.concat([df, scaled_metrics], axis = 1)
-
-    # Create a new bias column to map linear combination of metrics to happiness
-    df['Country_bias'] = (df['Happiness_score'] - (10/6) * df[['gdp_norm', 
-                                                               'social_norm', 
-                                                               'life_norm', 
-                                                               'free_norm', 
-                                                               'gen_norm', 
-                                                               'corruption_norm']].sum(axis = 1)).round(3)
-    return df
 
 def validate_inputs():
     assert os.path.exists(input_dir), "Invalid input directory path provided"
-    if not os.path.exists(os.path.dirname(output_filename)):
-        os.makedirs(os.path.dirname(output_filename))
-    assert os.path.exists(os.path.dirname(output_filename)), "Invalid output path provided"
+    if not os.path.exists(os.path.dirname(output_dir)):
+        os.makedirs(os.path.dirname(output_dir))
+    assert os.path.exists(os.path.dirname(output_dir)), "Invalid output path provided"
 
 if __name__ == "__main__":
     input_dir = args["--input"]
-    output_filename = args["--output"]
+    output_dir = args["--output"]
     verbose = args["-v"]
     validate_inputs()
     preprocess_data()

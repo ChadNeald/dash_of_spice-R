@@ -13,10 +13,11 @@ library(purrr)
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 
-# Load data and find unique country names for drop down
+# Load data
 data_path = "data/processed/df_tidy.csv"
-data_country_plots = read.csv(data_path)
-unique_countries <- data_country_plots %>%
+df <- read.csv(data_path)
+
+unique_countries <- df %>%
     select(Country) %>%
     distinct() %>%
     pull(1)
@@ -24,26 +25,18 @@ unique_countries <- data_country_plots %>%
 # options for drop down country list
 options = to_list(for (c in unique_countries) options = list(label = c, value = c))
 
-# for table (top 10 countries skeleton)
-df <- read.csv("./data/processed/df_tidy.csv")
-
-# Build a matrix for multiplying with slider vectors, 2020 only for now
-df_norm_metrics <- df %>% 
-  filter(Year == "2020") %>% 
-  select(life_norm, free_norm, gdp_norm, social_norm, gen_norm, corruption_norm) %>% 
-  as.matrix()
-
-df_norm_bias <- df %>% 
-  filter(Year == "2020") %>% 
-  select(Country_bias)
-
-df <- df %>% 
-  select(-(gdp_norm:Country_bias))
-
 df_table <- df %>%
   filter(Year == "2020") %>%
-  mutate(Happiness = Happiness_score) %>% 
-  select(Happiness, Country)
+  select(Happiness, Country, Rank)
+
+# Build a matrix for multiplying with slider vectors, 2020 only for now
+df_weights <- read.csv("data/processed/df_weights.csv")
+df_norm_metrics <- df_weights %>% 
+  select(-bias) %>%
+  as.matrix()
+
+df_norm_bias <- df_weights %>%
+  select(bias)
 
 # Our happiness formula to map the slider changes to the original scores
 compute_happiness <- function(slider_vector) {
@@ -121,12 +114,38 @@ render_map <- function(input_df) {
                  zmin = 0,
                  zmax = 10,
                  colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
-                 z=~Happiness_score,
+                 z=~Happiness,
                  unselected = list(marker= list(opacity = 0.1)),
                  marker=list(line=list(color = 'black', width=0.2)
                  ))
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
                  clickmode = 'event+select', autosize = FALSE, width = 650, height = 450)#, dragmode = 'select')
+}
+
+update_table <- function(updated_df) {
+  df_table_update <- updated_df %>% 
+    arrange(desc(Happiness)) %>% 
+    slice(1:10)
+  
+  return(df_table_update)
+}
+
+render_bar_plot <- function(updated_df) {
+  country_list <- updated_df %>%
+    arrange(desc(Happiness)) %>% 
+    slice(1:10) %>% 
+    select(Rank, Country) %>% 
+    arrange(Rank)
+  
+  bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
+    geom_bar(stat="identity") +
+    labs(fill = "Rank") +
+    scale_fill_gradient2(low="grey", mid="yellow", high="green") +
+    theme_bw() +
+    theme(axis.title.y = element_blank(),
+          panel.border = element_blank())
+  
+  return(ggplotly(bar_fig, tooltip = "label"))
 }
 
 #-----------------------------------------------------------------
@@ -204,7 +223,7 @@ app$layout(dbcContainer(htmlDiv(
         htmlH3("Choose your metric:"),
         dccDropdown(
           options=list(
-            list(label="Happiness Score", value="Happiness_score"),
+            list(label="Happiness Score", value="Happiness"),
             list(label="GDP Per Capita", value="GDP_per_capita"),
             list(label="Social Support", value="Social_support"),
             list(label="Life Expectancy", value="Life_expectancy"),
@@ -233,9 +252,11 @@ app$layout(dbcContainer(htmlDiv(
 
 # App Callbacks
 
-# Slider - Table Callback
+# Slider Callbacks
 app$callback(
-  output(id = "top_5_table", property = "data"),
+  output = list(output(id = "map", property = "figure"),
+                output(id = "top_5_table", property = "data"),
+                output(id = "bar_plot", property = "figure")),
   params = list(input(id = "slider_health", property = "value"),
                 input(id = "slider_free", property = "value"),
                 input(id = "slider_econ", property = "value"),
@@ -243,22 +264,15 @@ app$callback(
                 input(id = "slider_gen", property = "value"),
                 input(id = "slider_corr", property = "value")),
   function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
+    slider_weights <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
     
-    measure <- c("Life_expectancy", "Freedom", "GDP_per_capita","Social_support", "Generosity", "Corruption") # create Measure column
-    value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
+    df_update <- df_table %>% 
+      select(Country, Rank)
+    df_update[, "Happiness"] <- compute_happiness(slider_weights)
     
-    df_table_update <- df_table %>% 
-      select(Country)
-    df_table_update[ , "Happiness"] <- compute_happiness(value)
-    df_table_update <- df_table_update %>% 
-      arrange(desc(Happiness)) %>% 
-      slice(1:10)
-    
-    return(df_table_update)
+    return <- list(render_map(df_update), update_table(df_update), render_bar_plot(df_update))
   }
 )
-
-# Slider callback
 
 # Reset Button Callback, reset back to 5
 app$callback(
@@ -273,66 +287,6 @@ app$callback(
     return (list(5, 5, 5, 5, 5, 5))
   }
 )
-
-# Slider - Map Callback
-app$callback(
-  output = output(id = "map", property = "figure"),
-  params = list(input(id = "slider_health", property = "value"),
-                input(id = "slider_free", property = "value"),
-                input(id = "slider_econ", property = "value"),
-                input(id = "slider_ss", property = "value"),
-                input(id = "slider_gen", property = "value"),
-                input(id = "slider_corr", property = "value")),
-  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
-    data <- filter(df, Year == 2020) %>%
-      rename(Rank = Happiness_rank)
-    
-    measure <- c("Life_expectancy", "Freedom", "GDP_per_capita", "Social_support", "Generosity", "Corruption") # create Measure column
-    value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
-    
-    data <- df_table %>% 
-      select(Country)
-    data[ , "Happiness_score"] <- compute_happiness(value)
-    
-    return(render_map(data))
-  }
-)
-
-# Slider - Bar chart Callback
-app$callback(
-  output = output(id = "bar_plot", property = "figure"),
-  params = list(input(id = "slider_health", property = "value"),
-                input(id = "slider_free", property = "value"),
-                input(id = "slider_econ", property = "value"),
-                input(id = "slider_ss", property = "value"),
-                input(id = "slider_gen", property = "value"),
-                input(id = "slider_corr", property = "value")),
-  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
-    data <- filter(df, Year == 2020) %>%
-      rename(Rank = Happiness_rank)
-    
-    measure <- c("Life_expectancy", "Freedom", "GDP_per_capita", "Social_support", "Generosity", "Corruption") # create Measure column
-    value <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
-    
-    data[ , "Happiness"] <- compute_happiness(value)
-    country_list <- data %>%
-      arrange(desc(Happiness)) %>% 
-      slice(1:10) %>% 
-      select(Rank, Country) %>% 
-      arrange(Rank)
-
-    bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
-      geom_bar(stat="identity") +
-      labs(fill = "Rank") +
-      scale_fill_gradient2(low="grey", mid="yellow", high="green") +
-      theme_bw() +
-      theme(axis.title.y = element_blank(),
-            panel.border = element_blank())
-    
-    return(ggplotly(bar_fig, tooltip = "label"))
-  }
-)
-
 
 ###################################################################################
 
