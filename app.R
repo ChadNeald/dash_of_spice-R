@@ -95,7 +95,7 @@ render_bar_plot <- function(updated_df) {
 
 # consolidating everything
 
-description <- "Description: Write something here about how the app works. Blah blah baloney baloney cheese and macaroni. :-)"
+description <- "Welcome! Use the sliders to rank how important the different happiness metrics are to you, and we'll take care of the rest. Feel free to choose different countries to compare too!"
 
 github <- htmlA(children = list(htmlImg(src="assets/github_logo.png", style = list(width = '15%', height = '5%', 'position' = 'relative', 'left' = '40%'))),
                 href = 'https://github.com/UBC-MDS/dash_of_spice-R',
@@ -253,7 +253,7 @@ app$layout(
         list(
           dbcCol(
             list(
-              htmlP(paste(description), style = list('position' = 'relative', 'left' = '20%'))
+              htmlP(paste(description), style = list('position' = 'relative', 'left' = '6.5%'))
             ), style = list(padding = '0%', height = '10%', backgroundColor = '#ffd803b9', 'min-width' = 'unset', display='flex', 'vertical-align' = 'top')
 
           )
