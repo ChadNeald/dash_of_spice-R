@@ -229,8 +229,8 @@ metrics_dropdown <- dccDropdown(
                 "height" = "20px",
                 #"margin" = "30px",
                 'position' = 'relative',
-                'bottom' = '15px',
-                'left' = '130px'
+                'bottom' = '20px',
+                'left' = '120px'
               )
             )
 
@@ -298,16 +298,16 @@ app$layout(
                 list(
                   dccGraph(id='bar_plot', style = list('width' = '100%', 'height' = '0%', 'position' = 'relative'))
                 )
-              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'left' = '20px', 'bottom' = '25px')
+              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'right' = '23px', 'bottom' = '25px')
             ),
             dbcCol(
               htmlDiv(
                 list(
                   htmlH4("Choose your metrics:", style = list('position' = 'relative')),
                   metrics_dropdown,
-                  dccGraph(id='country_plot', style = list('width' = 450, 'height' = 370))
+                  dccGraph(id='country_plot', style = list('width' = 450, 'height' = 395))
                 )
-              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'left' = '0px', 'bottom' = '0px')
+              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '100%', 'position' = 'relative', 'border' = '20px white solid', 'right' = '36px', 'bottom' = '27px')
             )
           )
         )
