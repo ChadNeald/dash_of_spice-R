@@ -171,11 +171,11 @@ country_dropdown <- dccDropdown(
                     style=list(
                     "verticalAlign" = "middle",
                     "border-width"= "10",
-                    "width" = "80%",
+                    "width" = "84%",
                     "height" = "20px",
                     "margin" = "3px", 
                     'position' = 'relative',
-                    'left' = '17%',
+                    'left' = '15%',
                     'top' = '11px'
                     )
                     )
@@ -213,11 +213,10 @@ table <-
 
 metrics_dropdown <- dccDropdown(
               options=list(
-                list(label="Happiness Score", value="Happiness_score"),
-                list(label="GDP Per Capita", value="GDP_per_capita"),
-                list(label="Social Support", value="Social_support"),
-                list(label="Life Expectancy", value="Life_expectancy"),
+                list(label="Health", value="Life_expectancy"),
                 list(label="Freedom", value="Freedom"),
+                list(label="Economy", value="GDP_per_capita"),
+                list(label="Social Support", value="Social_support"),
                 list(label="Generosity", value="Generosity"),
                 list(label="Corruption", value="Corruption")
               ),
