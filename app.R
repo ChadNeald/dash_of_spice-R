@@ -282,7 +282,7 @@ app$layout(
               )
             )
           )
-        )
+        ) 
       ),
       htmlDiv(
         dbcRow(
