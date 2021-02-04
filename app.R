@@ -18,9 +18,9 @@ data_path = "data/processed/df_tidy.csv"
 df <- read.csv(data_path)
 
 unique_countries <- df %>%
-    select(Country) %>%
-    distinct() %>%
-    pull(1)
+  select(Country) %>%
+  distinct() %>%
+  pull(1)
 
 # options for drop down country list
 options = to_list(for (c in unique_countries) options = list(label = c, value = c))
@@ -43,68 +43,7 @@ compute_happiness <- function(slider_vector) {
   happiness <- round((10/6)*df_norm_metrics %*% (slider_vector*(6/sum(slider_vector))) + df_norm_bias, 3)
 }
 
-slider_list <- function(){
-      list(
-        htmlH5("Happiness Metrics:"),
-        dbcLabel("Health"),
-        dccSlider(
-          id="slider_health",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Freedom"),
-        dccSlider(
-          id="slider_free",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Economy"),
-        dccSlider(
-          id="slider_econ",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Social support"),
-        dccSlider(
-          id="slider_ss",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Generosity"),
-        dccSlider(
-          id="slider_gen",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Corruption"),
-        dccSlider(
-          id="slider_corr",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        htmlBr(),
-        htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'white'))
-        )
-  
-}
+
 
 # margin customization to remove white box around it
 m <- list(l = 0, r = 0, b = 0, t = 0, pad = 10)
@@ -122,8 +61,8 @@ render_map <- function(input_df) {
                  unselected = list(marker= list(opacity = 0.1)),
                  marker=list(line=list(color = 'black', width=0.2)
                  ))
-  map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = TRUE),
-                 clickmode = 'event+select', autosize = FALSE, width = 400, height = 400, margin = m)#, dragmode = 'select')
+  map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
+                 clickmode = 'event+select', autosize = FALSE, width = 700, height = 400, margin = m)#, dragmode = 'select')
 }
 
 update_table <- function(updated_df) {
@@ -154,6 +93,177 @@ render_bar_plot <- function(updated_df) {
 
 #-----------------------------------------------------------------
 
+# consolidating everything
+
+description <- "Welcome! Use the sliders to rank how important the different happiness metrics are to you, and we'll take care of the rest. Feel free to choose different countries to compare too!"
+
+github <- htmlA(children = list(htmlImg(src="assets/github_logo.png", style = list(width = '15%', height = '5%', 'position' = 'relative', 'left' = '40%'))),
+                href = 'https://github.com/UBC-MDS/dash_of_spice-R',
+                style = list(width = '20%', height = '20%', 'position' = 'relative', 'left' = '32%'))
+
+sliders <- htmlDiv(
+  list(
+    htmlH4("Happiness Metrics:"),
+    dbcLabel("Health"),
+    dccSlider(
+      id="slider_health",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Freedom"),
+    dccSlider(
+      id="slider_free",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Economy"),
+    dccSlider(
+      id="slider_econ",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Social support"),
+    dccSlider(
+      id="slider_ss",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Generosity"),
+    dccSlider(
+      id="slider_gen",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Corruption"),
+    dccSlider(
+      id="slider_corr",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    htmlBr(),
+    htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'white'))
+  ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 10, 'width' = '90%', 'height' = '0%', 'border' = '40px white solid')
+)
+
+country_dropdown <- dccDropdown(
+  options = options,
+  value = list("Canada", "United States"),
+  id = "country_drop_down",
+  multi = TRUE,
+  style=list(
+    "verticalAlign" = "middle",
+    "border-width"= "10",
+    "width" = "84%",
+    "height" = "20px",
+    "margin" = "3px", 
+    'position' = 'relative',
+    'left' = '15%',
+    'top' = '11px'
+  )
+)
+
+map <- htmlDiv(
+  list(
+    dccGraph(id = "map", figure=render_map(df))
+  )
+)
+
+table <- 
+  list(
+    htmlH5("Top 10 Countries"), 
+    dashDataTable(
+      id = "top_5_table",
+      columns = lapply(colnames(df_table),
+                       function(colName){
+                         list(
+                           id = colName,
+                           name = colName
+                         )
+                       }),
+      data_previous = df_to_list(df_table),
+      style_table = list(width = "300px", margin = 'auto'),
+      style_cell = list(
+        textAlign = 'center',
+        backgroundColor = 'white'
+      ),
+      style_header = list(
+        fontWeight = 'bold'
+      ),
+      css = list(
+        list(
+          "selector" = "td.cell--selected, td.focused",
+          "rule" = 'background-color: white !important;'#),
+#        list(
+#          "selector" = "td.cell--selected *, td.focused *",
+#          "rule" = 'border-color: blue !important;'
+        
+        
+          #          'selector' = '.dash-cell div.dash-cell-value',
+          #          'selector' = 'color: transparent  !important;',
+          #          'th' = 'background-color: #4CAF50; color: white;'
+          
+          #          'selector' = '.dash-spreadsheet-container .dash-spreadsheet-inner table {
+          #            --accent: transparent  !important;
+          #            --border: transparent !important;
+          #            --text-color: transparent !important;
+          #            --hover: transparent !important;
+          #            --background-color-ellipses: transparent !important;
+          #            --faded-text: transparent !important;
+          #            --faded-text-header: transparent !important;
+          #            --selected-background: transparent !important;
+          #            --faded-dropdown: transparent !important;
+          #            --muted: transparent !important;
+          #          }'
+          
+          
+        )
+      )
+    )
+  )
+
+
+metrics_dropdown <- dccDropdown(
+  options=list(
+    list(label="Health", value="Life_expectancy"),
+    list(label="Freedom", value="Freedom"),
+    list(label="Economy", value="GDP_per_capita"),
+    list(label="Social Support", value="Social_support"),
+    list(label="Generosity", value="Generosity"),
+    list(label="Corruption", value="Corruption")
+  ),
+  value = "Freedom",
+  id = "yaxis_feature",
+  style = list(
+    "border-width"= "10",
+    "width" = "200px",
+    "height" = "20px",
+    #"margin" = "30px",
+    'position' = 'relative',
+    'bottom' = '20px',
+    'left' = '120px'
+  )
+)
+
+# actual layout
+
 app$layout(
   htmlDiv(
     list(
@@ -162,7 +272,7 @@ app$layout(
           # Logo
           htmlImg(src="assets/logo.png", style =list('width' = '5%', 'position' = 'relative', 'left' = '3%')),
           # Title
-          htmlH1(" The Happiness Navigator ",style=list('align' = 'center', 'position' = 'relative', 'left' = '30%', 'border' = '7px white solid', 'border-style' = 'none none dashed')),          
+          htmlH1(" The Happiness Navigator ",style=list('align' = 'center', 'position' = 'relative', 'left' = '30%', 'border' = '7px white solid', 'border-style' = 'none none dashed')),
           # Smiley
           htmlImg(src="assets/smiley.gif", style =list('width' = '5%', 'height' = '10%', 'position' = 'relative', 'left' = '57%', 'top' = '-4px'))
         ),
@@ -170,129 +280,77 @@ app$layout(
       ),
       dbcRow(
         list(
-          htmlDiv(
+          dbcCol(
             list(
-              dbcCol(
+              htmlP(paste(description), style = list('position' = 'relative', 'left' = '6.5%'))
+            ), style = list(padding = '0%', height = '10%', backgroundColor = '#ffd803b9', 'min-width' = 'unset', display='flex', 'vertical-align' = 'top')
+            
+          )
+        )
+      ),
+      dbcRow(
+        list(
+          dbcCol(
+            list(
+              htmlDiv(
                 list(
-                  htmlA(children = list(htmlImg(src="assets/github_logo.png", style = list(width = '15%', height = '5%', 'position' = 'relative', 'left' = '40%'))),
-                        href = 'https://github.com/UBC-MDS/dash_of_spice-R',
-                        style = list(width = '10%', height = '10%')),
-                  htmlBr(),
-                  htmlBr(),
-                  htmlH2("Dash Of Spice", style=list(color = 'white')),
-                  htmlBr(),
-                  htmlP(paste("Description: Write something here about how the app works. Blah blah baloney baloney cheese and macaroni. :-) The map is my true demise. There's a giant white box border surrounding it which is why nothing else fits into my grid layout. I think it's starting to look better with the more I write. Maybe we can fill this spot in with cute images. I learned how to insert html images today. The world is our oyster!")),
-                  htmlBr(),
-                  dbcCol(
-                    slider_list()
-                  )
+                  sliders
                 )
               )
-            ), 
-            style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '25%', 'height' = '100%', 'border' = '40px white solid')
+            )
           ),
           dbcCol(
             list(
-              dbcRow(
-                htmlDiv(
+              htmlDiv(
+                dbcCard(
                   list(
-                    dccDropdown(
-                    options = options,
-                    value = list("Canada", "United States"),
-                    id = "country_drop_down",
-                    multi = TRUE,
-                    style=list(
-                    "verticalAlign" = "middle",
-                    "border-width"= "10",
-                    "width" = "90%",
-                    "height" = "20px",
-                    "margin" = "50px"
-                    )
-                    )
-                  )  
-                ), style = list('position' = 'relative', 'right' = '20%', 'bottom' = '40px')
-              ),
-              dbcRow(
-                htmlDiv(
-                  list(
-                    dccGraph(id = "map", figure=render_map(df), style = list('position' = 'relative', 'width' = '50%', 'height' = '45%', 'bottom' = '55px', 'padding' = 0))
-                  )
-                )
-              ),
-              dbcRow(
-                htmlDiv(
-                  list(
-                    htmlH4("Choose your metrics:", style = list('position' = 'relative')),
-                    dccDropdown(
-                      options=list(
-                      list(label="Happiness Score", value="Happiness_score"),
-                      list(label="GDP Per Capita", value="GDP_per_capita"),
-                      list(label="Social Support", value="Social_support"),
-                      list(label="Life Expectancy", value="Life_expectancy"),
-                      list(label="Freedom", value="Freedom"),
-                      list(label="Generosity", value="Generosity"),
-                      list(label="Corruption", value="Corruption")
-                      ),
-                    value = "Freedom",
-                    id = "yaxis_feature",
-                    style = list(
-                      "border-width"= "10",
-                      "width" = "200px",
-                      "height" = "20px",
-                      #"margin" = "30px",
-                      'position' = 'relative',
-                      'bottom' = '20px',
-                      'left' = '130px'
-                    )
-                  ),
-                  dccGraph(id='country_plot', style = list('width' = 460, 'height' = '300'))
-                )
-              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'bottom' = '30px')
+                    dbcCardHeader(list(country_dropdown, htmlH4("Choose your countries: "))),
+                    dbcCardBody(map)
+                  ), color = 'warning', outline = 'True' 
+                ), style = list('position' = 'relative', 'right' = '50px', 'top' = '6%', 'width' = '60rem')
+              )
             )
           )
-        ),
-        dbcCol(
+        ) 
+      ),
+      htmlDiv(
+        dbcRow(
           list(
-            dbcRow(
+            dbcCol(
+              htmlDiv(
+                table
+              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '0%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'left' = '0px', 'bottom' = '0px')
+            ),
+            dbcCol(
               htmlDiv(
                 list(
-                  htmlH5("Top 10 Countries"), 
-                  dashDataTable(
-                    id = "top_5_table",
-                    columns = lapply(colnames(df_table),
-                    function(colName){
-                      list(
-                        id = colName,
-                        name = colName
-                      )
-                    }),
-                  data_previous = df_to_list(df_table),
-                  style_table = list(width = "250px"),
-                  style_cell = list(
-                    textAlign = 'center',
-                    backgroundColor = '#ffd803b9'
-                  ),
-                    style_header = list(
-                      fontWeight = 'bold'
-                    )
-                    )
-                  )
-                ), style = list('position' = 'relative', 'left' = '100px')
-              ),
-              dbcRow(
-                htmlDiv(
-                  list(
-                    dccGraph(id='bar_plot', style = list('width' = '80%', 'height' = '80%'))
-                  )
-                ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'position' = 'relative', 'top' = '30px', 'left' = '30px')
-              )
-            )#, style = list('position' = 'relative', 'left' = '15%', 'width' = '10%', 'height' = '10%')
+                  dccGraph(id='bar_plot', style = list('width' = '100%', 'height' = '0%', 'position' = 'relative'))
+                )
+              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'right' = '23px', 'bottom' = '25px')
+            ),
+            dbcCol(
+              htmlDiv(
+                list(
+                  htmlH4("Choose your metrics:", style = list('position' = 'relative')),
+                  metrics_dropdown,
+                  dccGraph(id='country_plot', style = list('width' = 450, 'height' = 395))
+                )
+              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '100%', 'position' = 'relative', 'border' = '20px white solid', 'right' = '36px', 'bottom' = '27px')
+            )
           )
         )
+      ),
+      dbcRow(
+        list(
+          htmlH1("Dash Of Spice", style=list(color = 'black', 'align' = 'center', 'position' = 'relative', 'left' = '39%')),
+          github    
+        ), 
+        style = list(padding = '1%', height = '10%', backgroundColor = '#ffd803b9', 'min-width' = 'unset', display='flex', 'vertical-align' = 'top')
       )
     )
   )
 )
+
 
 ###################################################################################
 
@@ -339,7 +397,7 @@ app$callback(
 # Yearly trends plot
 app$callback(
   output = output(id = "country_plot", property = "figure"),
-                
+  
   params = list(input(id = "yaxis_feature", property = "value"),
                 input(id = "country_drop_down", property = "value"),
                 input(id = "map", property = "selectedData")),
@@ -357,21 +415,21 @@ app$callback(
     # Remove _'s from y axis name on graph
     yaxis_title <- strsplit(ycol, "_")
     yaxis_title <- paste(yaxis_title[[1]], collapse = " ")
-
-country_plot <- plot_data %>%
+    
+    country_plot <- plot_data %>%
       ggplot(aes(x = Year, color = Country)) +
-          geom_line(aes_string(y = ycol)) +
-          labs(y = yaxis_title, color = "")
+      geom_line(aes_string(y = ycol)) +
+      labs(y = yaxis_title, color = "")
     plotly_country <- ggplotly(country_plot)
     plotly_country <- plotly_country %>%
       layout(
         legend = list(
-        orientation = "h"#,
-        #x = -0.5
+          orientation = "h"#,
+          #x = -0.5
+        )
       )
-    )
-
-  return (plotly_country)
+    
+    return (plotly_country)
   }
 )
 
