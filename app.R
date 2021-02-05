@@ -44,7 +44,6 @@ compute_happiness <- function(slider_vector) {
 }
 
 
-
 # margin customization to remove white box around it
 m <- list(l = 0, r = 0, b = 0, t = 0, pad = 10)
 
@@ -192,32 +191,7 @@ table <-
       css = list(
         list(
           "selector" = "td.cell--selected, td.focused",
-          "rule" = 'background-color: white !important;'),
-                  list(
-                    "selector" = "td.cell--selected *, td.focused *",
-                    "rule" = 'border-collapse: collapse !important;'
-          #          "rule" = 'border-color: blue !important;'
-          
-          
-          #          'selector' = '.dash-cell div.dash-cell-value',
-          #          'selector' = 'color: transparent  !important;',
-          #          'th' = 'background-color: #4CAF50; color: white;'
-          
-          #          'selector' = '.dash-spreadsheet-container .dash-spreadsheet-inner table {
-          #            --accent: transparent  !important;
-          #            --border: transparent !important;
-          #            --text-color: transparent !important;
-          #            --hover: transparent !important;
-          #            --background-color-ellipses: transparent !important;
-          #            --faded-text: transparent !important;
-          #            --faded-text-header: transparent !important;
-          #            --selected-background: transparent !important;
-          #            --faded-dropdown: transparent !important;
-          #            --muted: transparent !important;
-          #          }'
-          
-          
-        )
+          "rule" = 'background-color: white !important;')
       )
     )
   )
@@ -476,9 +450,7 @@ app$callback(
       
       return(ggplotly(bar_fig, tooltip = "label"))
     }
-    
-    
-    }
+  }
 )
 
 #app$run_server(debug = F)
