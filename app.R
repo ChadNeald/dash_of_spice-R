@@ -10,6 +10,7 @@ library(tidyr)
 library(tidyverse)
 library(comprehenr)
 library(purrr)
+library(ggthemes)
 
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
@@ -141,7 +142,7 @@ sliders <- htmlDiv(
           value=5,
           marks=list("0" = "0", "5" = "5", "10" = "10")
         ),
-        dbcLabel("Corruption"),
+        dbcLabel("Less Corruption"),
         dccSlider(
           id="slider_corr",
           min=0,
@@ -182,7 +183,7 @@ table <-
           list(
             htmlH4("Top 10 Countries", style = list('position' = 'relative', 'left' = '25%', 'top' = '10px')), 
             htmlBr(),
-            htmlP(paste("Countries ranked according to your most important values."), style = list('position' = 'relative', 'left' = '6.5%')),
+            htmlP(paste("Countries ranked according to your most important values. Click to highlight!"), style = list('position' = 'relative', 'left' = '6.5%')),
             dashDataTable(
               id = "top_5_table",
               columns = lapply(colnames(df_table),
@@ -281,7 +282,7 @@ app$layout(
                 dbcCard(
                   list(
                     dbcCardHeader(list(country_dropdown, htmlH4("Choose your countries: "))),
-                    dbcCardBody(map)
+                    dbcCardBody(map, style = list('position' = 'relative', 'left' = '90px'))
                   ), color = 'warning', outline = 'True' 
                 ), style = list('position' = 'relative', 'right' = '50px', 'top' = '6%', 'width' = '60rem')
               )
@@ -323,7 +324,7 @@ app$layout(
         ), 
         style = list(padding = '1%', height = '10%', backgroundColor = '#ffd803b9', 'min-width' = 'unset', display='flex', 'vertical-align' = 'top')
       )
-    )
+    ), style = list(overflow = 'hidden')
   )
 )
 
@@ -393,7 +394,7 @@ app$callback(
     yaxis_title <- paste(yaxis_title[[1]], collapse = " ")
 
 country_plot <- plot_data %>%
-      ggplot(aes(x = Year, color = Country)) +
+      ggplot(aes(x = Year, color = Country)) + theme_few() +
           geom_line(aes_string(y = ycol)) +
           labs(y = yaxis_title, color = "")
     plotly_country <- ggplotly(country_plot)
@@ -453,7 +454,7 @@ app$callback(
         labs(x = 'Happiness Score') +
         scale_fill_gradient(low = "khaki3", high = "yellow1") +
         scale_x_continuous(limits = c(0, 8)) +
-        theme_bw() +
+        theme_few() +
         theme(plot.title = element_text(size = 12),
               axis.text = element_text(size = 10),
               legend.title = element_text(size = 9),
@@ -471,7 +472,7 @@ app$callback(
         labs(fill = "Rank", x = 'Happiness Score') +
         scale_fill_gradient(low = "slategray2", high = "yellow1") +
         scale_x_continuous(limits = c(0, 10)) +
-        theme_bw() +
+        theme_few() +
         theme(axis.text = element_text(size = 10),
               legend.title = element_text(size = 9),
               legend.text = element_text(size = 8),
