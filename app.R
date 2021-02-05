@@ -192,9 +192,10 @@ table <-
       css = list(
         list(
           "selector" = "td.cell--selected, td.focused",
-          "rule" = 'background-color: white !important;'#),
-          #        list(
-          #          "selector" = "td.cell--selected *, td.focused *",
+          "rule" = 'background-color: white !important;'),
+                  list(
+                    "selector" = "td.cell--selected *, td.focused *",
+                    "rule" = 'border-collapse: collapse !important;'
           #          "rule" = 'border-color: blue !important;'
           
           
@@ -305,7 +306,7 @@ app$layout(
             ),
             dbcCol(
               htmlDiv(
-                list(htmlH5("Happiness of Countries chosen on the map"),
+                list(htmlH5("Overall Happiness and Country Rank"),
                   dccGraph(id='bar_plot', style = list('width' = '100%', 'height' = '0%', 'position' = 'relative'))
                 )
               ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'right' = '23px', 'bottom' = '25px')
@@ -401,7 +402,8 @@ app$callback(
     country_plot <- plot_data %>%
       ggplot(aes(x = Year, color = Country)) +
       geom_line(aes_string(y = ycol)) +
-      labs(y = yaxis_title, color = "")
+      labs(y = yaxis_title, color = "") +
+      theme_bw()
     plotly_country <- ggplotly(country_plot)
     plotly_country <- plotly_country %>%
       layout(
@@ -444,6 +446,7 @@ app$callback(
       bar_fig <- ggplot(data=df_table_all, aes(x=Happiness, y=reorder(Year, Country), fill=Happiness, label = Rank)) +
         geom_bar(position = position_dodge(width = 0.1), stat = "identity") +
         ggtitle(paste0("Happiness trend for ", df_table_all$Country)) +
+        labs(x = 'Happiness Score') +
         scale_fill_gradient(low = "khaki3", high = "yellow1") +
         scale_x_continuous(limits = c(0, 8)) +
         theme_bw() +
@@ -460,10 +463,10 @@ app$callback(
       # Bar plot for more than one country
       bar_fig <- ggplot(data=country_list, aes(x=Happiness, y=reorder(Country, Happiness), fill=-Rank, label = Rank)) +
         geom_bar(stat="summary") +
-        coord_fixed(ratio = 2.5) +
-        labs(fill = "Rank") +
+ #       coord_fixed(ratio = 2.5) +
+        labs(fill = "Rank", x = 'Happiness Score') +
         scale_fill_gradient(low = "slategray2", high = "yellow1") +
-        scale_x_continuous(limits = c(0, 8)) +
+        scale_x_continuous(limits = c(0, 10)) +
         theme_bw() +
         theme(axis.text = element_text(size = 10),
               legend.title = element_text(size = 9),
