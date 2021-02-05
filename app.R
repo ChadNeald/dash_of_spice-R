@@ -198,7 +198,9 @@ map <- htmlDiv(
 
 table <- 
           list(
-            htmlH5("Top 10 Countries"), 
+            htmlH4("Top 10 Countries", style = list('position' = 'relative', 'left' = '25%', 'top' = '10px')), 
+            htmlBr(),
+            htmlP(paste("Countries ranked according to your most important values."), style = list('position' = 'relative', 'left' = '6.5%')),
             dashDataTable(
               id = "top_5_table",
               columns = lapply(colnames(df_table),
@@ -209,15 +211,26 @@ table <-
                 )
               }),
               data_previous = df_to_list(df_table),
-              style_table = list(width = "250px"),
+              style_table = list(width = "300px", height = '900px', margin = 'auto'),
               style_cell = list(
                 textAlign = 'center',
                 backgroundColor = 'white'
               ),
               style_header = list(
                 fontWeight = 'bold'
+              ),
+              css=list( # override default css for selected/focused table cells
+                list(
+                #'selector' = 'td.cell--selected, td.focused',
+                #'rule' = 'background-color: white;'
+                ), 
+                list(
+                #'selector' = 'td.cell--selected *, td.focused *',
+                #'rule' = 'color: white !important;'
+                )
               )
-            )
+            ),
+            htmlBr()
           )
         
 
@@ -300,7 +313,7 @@ app$layout(
             dbcCol(
               htmlDiv(
                 table
-              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '0%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'left' = '0px', 'bottom' = '0px')
+              ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 10, 'width' = '50px', 'height' = '567px', 'border' = '40px white solid', 'position' = 'relative', 'bottom' = '43px', 'left' = '15px')
             ),
             dbcCol(
               htmlDiv(
