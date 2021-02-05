@@ -11,8 +11,9 @@ library(tidyverse)
 library(comprehenr)
 library(purrr)
 
-app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 
+app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
+first_pass <<- 0
 # Load data
 data_path = "data/processed/df_tidy.csv"
 df <- read.csv(data_path)
@@ -48,7 +49,15 @@ compute_happiness <- function(slider_vector) {
 # margin customization to remove white box around it
 m <- list(l = 0, r = 0, b = 0, t = 0, pad = 10)
 
-render_map <- function(input_df) {
+render_map <- function(input_df, drop_down_list = list("United States", "Canada")) {
+  # Need a dummy variable so one clicked country gets highlighted on the map
+  dummy_variable = list(-1)
+  highlighted_countries <- which(input_df$Country %in% drop_down_list) - 1
+  
+  if (length(highlighted_countries) == 1) {
+      highlighted_countries <- c(highlighted_countries, dummy_variable)
+  }
+  
   map <- plot_ly(input_df, 
                  type='choropleth', 
                  locations=~Country, 
@@ -59,6 +68,7 @@ render_map <- function(input_df) {
                  colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
                  z=~Happiness,
                  unselected = list(marker= list(opacity = 0.1)),
+                 selectedpoints = array(highlighted_countries),
                  marker=list(line=list(color = 'black', width=0.2)
                  ))
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
@@ -350,15 +360,16 @@ app$callback(
                 input(id = "slider_econ", property = "value"),
                 input(id = "slider_ss", property = "value"),
                 input(id = "slider_gen", property = "value"),
-                input(id = "slider_corr", property = "value")),
-  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
+                input(id = "slider_corr", property = "value"),
+                input(id = "country_drop_down", property = "value")),
+  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value, drop_down_list) {
     slider_weights <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
     
     df_update <- df_table %>% 
       select(Country, Rank)
     df_update[, "Happiness"] <- compute_happiness(slider_weights)
     
-    return <- list(render_map(df_update), update_table(df_update), render_bar_plot(df_update))
+    return <- list(render_map(df_update, drop_down_list), update_table(df_update), render_bar_plot(df_update))
   }
 )
 
@@ -417,5 +428,16 @@ country_plot <- plot_data %>%
   }
 )
 
-#app$run_server(debug = F)
-app$run_server(host = '0.0.0.0') # for deploying on heroku
+app$callback(
+  output = list(output(id = "country_drop_down", property = "value")),
+  params = list(input(id = "map", property = "selectedData")),
+  function(selected_data) {
+    map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
+    map_selections <- strsplit(map_selections[[1]], ", ")
+    map_selections <- map_selections[[1]]
+        
+    return <- list(map_selections)
+  }
+)
+app$run_server(debug = F)
+#app$run_server(host = '0.0.0.0') # for deploying on heroku
