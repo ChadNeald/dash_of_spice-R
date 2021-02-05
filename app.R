@@ -73,23 +73,23 @@ update_table <- function(updated_df) {
   return(df_table_update)
 }
 
-render_bar_plot <- function(updated_df) {
-  country_list <- updated_df %>%
-    arrange(desc(Happiness)) %>% 
-    slice(1:10) %>% 
-    select(Rank, Country) %>% 
-    arrange(Rank)
-  
-  bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
-    geom_bar(stat="identity") +
-    labs(fill = "Rank") +
-    scale_fill_gradient2(low="grey", mid="yellow", high="green") +
-    theme_bw() +
-    theme(axis.title.y = element_blank(),
-          panel.border = element_blank())
-  
-  return(ggplotly(bar_fig, tooltip = "label"))
-}
+# render_bar_plot <- function(updated_df) {
+#   country_list <- updated_df %>%
+#     arrange(desc(Happiness)) %>% 
+#     slice(1:10) %>% 
+#     select(Rank, Country) %>% 
+#     arrange(Rank)
+#   
+#   bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
+#     geom_bar(stat="identity") +
+#     labs(fill = "Rank") +
+#     scale_fill_gradient2(low="grey", mid="yellow", high="green") +
+#     theme_bw() +
+#     theme(axis.title.y = element_blank(),
+#           panel.border = element_blank())
+#   
+#   return(ggplotly(bar_fig, tooltip = "label"))
+# }
 
 #-----------------------------------------------------------------
 
@@ -211,11 +211,11 @@ table <-
         list(
           "selector" = "td.cell--selected, td.focused",
           "rule" = 'background-color: white !important;'#),
-#        list(
-#          "selector" = "td.cell--selected *, td.focused *",
-#          "rule" = 'border-color: blue !important;'
-        
-        
+          #        list(
+          #          "selector" = "td.cell--selected *, td.focused *",
+          #          "rule" = 'border-color: blue !important;'
+          
+          
           #          'selector' = '.dash-cell div.dash-cell-value',
           #          'selector' = 'color: transparent  !important;',
           #          'th' = 'background-color: #4CAF50; color: white;'
@@ -323,7 +323,7 @@ app$layout(
             ),
             dbcCol(
               htmlDiv(
-                list(
+                list(htmlH5("Countries chosen on the map for 2020"),
                   dccGraph(id='bar_plot', style = list('width' = '100%', 'height' = '0%', 'position' = 'relative'))
                 )
               ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'right' = '23px', 'bottom' = '25px')
@@ -359,8 +359,9 @@ app$layout(
 # Slider Callbacks
 app$callback(
   output = list(output(id = "map", property = "figure"),
-                output(id = "top_5_table", property = "data"),
-                output(id = "bar_plot", property = "figure")),
+                output(id = "top_5_table", property = "data")#,
+#                output(id = "bar_plot", property = "figure")
+),
   params = list(input(id = "slider_health", property = "value"),
                 input(id = "slider_free", property = "value"),
                 input(id = "slider_econ", property = "value"),
@@ -374,7 +375,7 @@ app$callback(
       select(Country, Rank)
     df_update[, "Happiness"] <- compute_happiness(slider_weights)
     
-    return <- list(render_map(df_update), update_table(df_update), render_bar_plot(df_update))
+    return <- list(render_map(df_update), update_table(df_update))#, render_bar_plot(df_update))
   }
 )
 
@@ -430,6 +431,36 @@ app$callback(
       )
     
     return (plotly_country)
+  }
+)
+
+# Bar plot callback
+app$callback(
+  output = output(id = "bar_plot", property = "figure"),
+  
+  params = list(input(id = "country_drop_down", property = "value"),
+                input(id = "map", property = "selectedData")),
+  
+  function(drop_down_list, selected_data) {
+    # Getting the selected contries from the map into a nice format
+    map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
+    map_selections <- strsplit(map_selections[[1]], ", ")
+    map_selections <- map_selections[[1]]
+    
+    # Filter by drop down countries and map selection countries
+    country_list <- df_table %>%
+      filter(Country %in% drop_down_list | Country %in% map_selections)%>%
+      arrange(Rank)
+    
+    bar_fig <- ggplot(data=country_list, aes(x=Happiness, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
+      geom_bar(stat="identity") +
+      labs(fill = "Rank") +
+      scale_fill_gradient2(low="grey", mid="yellow", high="green") +
+      theme_bw() +
+      theme(axis.title.y = element_blank(),
+            panel.border = element_blank())
+    
+    return(ggplotly(bar_fig, tooltip = "label"))
   }
 )
 
