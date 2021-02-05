@@ -73,24 +73,6 @@ update_table <- function(updated_df) {
   return(df_table_update)
 }
 
-# render_bar_plot <- function(updated_df) {
-#   country_list <- updated_df %>%
-#     arrange(desc(Happiness)) %>% 
-#     slice(1:10) %>% 
-#     select(Rank, Country) %>% 
-#     arrange(Rank)
-#   
-#   bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
-#     geom_bar(stat="identity") +
-#     labs(fill = "Rank") +
-#     scale_fill_gradient2(low="grey", mid="yellow", high="green") +
-#     theme_bw() +
-#     theme(axis.title.y = element_blank(),
-#           panel.border = element_blank())
-#   
-#   return(ggplotly(bar_fig, tooltip = "label"))
-# }
-
 #-----------------------------------------------------------------
 
 # consolidating everything
@@ -323,7 +305,7 @@ app$layout(
             ),
             dbcCol(
               htmlDiv(
-                list(htmlH5("Countries chosen on the map for 2020"),
+                list(htmlH5("Happiness of Countries chosen on the map"),
                   dccGraph(id='bar_plot', style = list('width' = '100%', 'height' = '0%', 'position' = 'relative'))
                 )
               ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 20, 'width' = '100%', 'height' = '5%', 'position' = 'relative', 'border' = '20px white solid', 'right' = '23px', 'bottom' = '25px')
@@ -359,8 +341,7 @@ app$layout(
 # Slider Callbacks
 app$callback(
   output = list(output(id = "map", property = "figure"),
-                output(id = "top_5_table", property = "data")#,
-#                output(id = "bar_plot", property = "figure")
+                output(id = "top_5_table", property = "data")
 ),
   params = list(input(id = "slider_health", property = "value"),
                 input(id = "slider_free", property = "value"),
@@ -375,7 +356,7 @@ app$callback(
       select(Country, Rank)
     df_update[, "Happiness"] <- compute_happiness(slider_weights)
     
-    return <- list(render_map(df_update), update_table(df_update))#, render_bar_plot(df_update))
+    return <- list(render_map(df_update), update_table(df_update))
   }
 )
 
@@ -452,16 +433,49 @@ app$callback(
       filter(Country %in% drop_down_list | Country %in% map_selections)%>%
       arrange(Rank)
     
-    bar_fig <- ggplot(data=country_list, aes(x=Happiness, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
-      geom_bar(stat="identity") +
-      labs(fill = "Rank") +
-      scale_fill_gradient2(low="grey", mid="yellow", high="green") +
-      theme_bw() +
-      theme(axis.title.y = element_blank(),
-            panel.border = element_blank())
-    
+    if (nrow(country_list) == 1) {
+      
+      df_table_all <- df %>%
+        select(Happiness, Country, Rank, Year)%>%
+        filter(Country %in% drop_down_list | Country %in% map_selections) %>%
+        arrange(Year)
+      
+      # Bar plot for one country
+      bar_fig <- ggplot(data=df_table_all, aes(x=Happiness, y=reorder(Year, Country), fill=Happiness, label = Rank)) +
+        geom_bar(position = position_dodge(width = 0.1), stat = "identity") +
+        ggtitle(paste0("Happiness trend for ", df_table_all$Country)) +
+        scale_fill_gradient(low = "khaki3", high = "yellow1") +
+        scale_x_continuous(limits = c(0, 8)) +
+        theme_bw() +
+        theme(plot.title = element_text(size = 12),
+              axis.text = element_text(size = 10),
+              legend.title = element_text(size = 9),
+              legend.text = element_text(size = 8),
+              axis.title.y = element_blank(),
+              panel.border = element_blank())
+      
     return(ggplotly(bar_fig, tooltip = "label"))
-  }
+      
+    } else {
+      # Bar plot for more than one country
+      bar_fig <- ggplot(data=country_list, aes(x=Happiness, y=reorder(Country, Happiness), fill=-Rank, label = Rank)) +
+        geom_bar(stat="summary") +
+        coord_fixed(ratio = 2.5) +
+        labs(fill = "Rank") +
+        scale_fill_gradient(low = "slategray2", high = "yellow1") +
+        scale_x_continuous(limits = c(0, 8)) +
+        theme_bw() +
+        theme(axis.text = element_text(size = 10),
+              legend.title = element_text(size = 9),
+              legend.text = element_text(size = 8),
+              axis.title.y = element_blank(),
+              panel.border = element_blank())      
+      
+      return(ggplotly(bar_fig, tooltip = "label"))
+    }
+    
+    
+    }
 )
 
 #app$run_server(debug = F)
