@@ -188,7 +188,7 @@ map <- htmlDiv(
 
 table <- 
           list(
-            htmlH5("Top 10 Countries"), 
+            htmlH4("Top 10 Countries", style = list('position' = 'relative')), 
             dashDataTable(
               id = "top_5_table",
               columns = lapply(colnames(df_table),
@@ -199,13 +199,23 @@ table <-
                 )
               }),
               data_previous = df_to_list(df_table),
-              style_table = list(width = "250px"),
+              style_table = list(width = "250px", margin = 'auto'),
               style_cell = list(
                 textAlign = 'center',
                 backgroundColor = 'white'
               ),
               style_header = list(
                 fontWeight = 'bold'
+              ),
+              css=list( # override default css for selected/focused table cells
+                list(
+                #'selector' = 'td.cell--selected, td.focused',
+                #'rule' = 'background-color: white;'
+                ), 
+                list(
+                #'selector' = 'td.cell--selected *, td.focused *',
+                #'rule' = 'color: white !important;'
+                )
               )
             )
           )
