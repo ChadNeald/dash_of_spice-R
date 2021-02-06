@@ -439,5 +439,6 @@ app$callback(
     return <- list(map_selections)
   }
 )
+
 app$run_server(debug = F)
 #app$run_server(host = '0.0.0.0') # for deploying on heroku
