@@ -33,13 +33,7 @@ At Dash of Spice, we aim to provide an easy-to-use application to individuals an
 ### Importance
 With the stigma surrounding mental health slowly evaporating and more people are openly discussing their mental struggles and seeking help, there is an increased need for accessible information about achieving maximum happiness. All over the world, people are looking for new adventures and new beginnings in hopes to find a place they can call home. The immigration process can be complicated and difficult, especially with the fast changing pace of society. Our purpose is to help facilitate the decision making process for people wanting to immigrate to a new country.  
 
-## Who are we?
-At Dash of Spice, we are a team of data scientists working for an immigration consulting company. The founders of Dash of Spice - [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug) - are friends from the Master of Data Science program at The University of British Columbia. The development of Happy Navvy was made in part of the course DSCI 532 - Data Visualization II. 
-
-## Come join us!
-If you are interested in joining us, please check out our [contribution file](https://github.com/UBC-MDS/dash_of_spice/blob/main/contribution_guidelines.md) for more information! 
-
-## Instructions on running the app locally
+## Instructions on setting up and running the app locally
 To run the app locally and reproduce yourself, fork this repo and follow the below steps in your local repository root:
 
 1. Create a new Python conda environment to run data wrangling scripts:
@@ -56,5 +50,16 @@ To run the app locally and reproduce yourself, fork this repo and follow the bel
 
 5. Install R packages
 `Rscript init.R`
+
+6. Run Dash
+`Rscript app.R` 
+
+7. Run Dash Run! Enter the local server URL into your browser: http://127.0.0.1:8050
+
+## Who are we?
+At Dash of Spice, we are a team of data scientists working for an immigration consulting company. The founders of Dash of Spice - [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug) - are friends from the Master of Data Science program at The University of British Columbia. The development of Happy Navvy was made in part of the course DSCI 532 - Data Visualization II. 
+
+## Come join us!
+If you are interested in joining us, please check out our [contribution file](https://github.com/UBC-MDS/dash_of_spice/blob/main/contribution_guidelines.md) for more information! 
 
 
