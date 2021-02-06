@@ -145,7 +145,7 @@ sliders <- htmlDiv(
           value=5,
           marks=list("0" = "0", "5" = "5", "10" = "10")
         ),
-        dbcLabel("Less Corruption"),
+        dbcLabel("Minimal Corruption"),
         dccSlider(
           id="slider_corr",
           min=0,
@@ -186,7 +186,7 @@ table <-
           list(
             htmlH4("Top 10 Countries", style = list('position' = 'relative', 'left' = '25%', 'top' = '10px')), 
             htmlBr(),
-            htmlP(paste("Countries ranked according to your most important values. Click to highlight!"), style = list('position' = 'relative', 'left' = '6.5%')),
+            htmlP(paste("Countries ranked according to your most important values."), style = list('position' = 'relative', 'left' = '6.5%')),
             dashDataTable(
               id = "top_5_table",
               columns = lapply(colnames(df_table),
@@ -205,14 +205,11 @@ table <-
               style_header = list(
                 fontWeight = 'bold'
               ),
-              css=list( # override default css for selected/focused table cells
+              style_cell_conditional = list(
                 list(
-                #'selector' = 'td.cell--selected, td.focused',
-                #'rule' = 'background-color: white;'
-                ), 
-                list(
-                #'selector' = 'td.cell--selected *, td.focused *',
-                #'rule' = 'color: white !important;'
+                  'if' = list('state' = 'selected'),
+                  backgroundColor = 'white',
+                  border = '0.000001px solid grey80'
                 )
               )
             ),
@@ -227,7 +224,7 @@ metrics_dropdown <- dccDropdown(
                 list(label="Economy", value="GDP_per_capita"),
                 list(label="Social Support", value="Social_support"),
                 list(label="Generosity", value="Generosity"),
-                list(label="Corruption", value="Corruption")
+                list(label="Minimal Corruption", value="Corruption")
               ),
               value = "Freedom",
               id = "yaxis_feature",
@@ -323,7 +320,8 @@ app$layout(
       dbcRow(
         list(
           htmlH1("Dash Of Spice", style=list(color = 'black', 'align' = 'center', 'position' = 'relative', 'left' = '39%')),
-          github    
+          github,
+          htmlP(paste("the secret spice ☺ "), style = list(color = 'white', 'position' = 'relative', 'left' = '5%', 'bottom' = '60px')) # a secret 🌶️
         ), 
         style = list(padding = '1%', height = '10%', backgroundColor = '#ffd803b9', 'min-width' = 'unset', display='flex', 'vertical-align' = 'top')
       )
@@ -410,7 +408,7 @@ country_plot <- plot_data %>%
       df_global$GlobalAverage = 'Global Average'
       country_plot <- df_global %>%
         ggplot(aes(x = Year, color = GlobalAverage)) +
-          stat_summary(fun = 'mean', aes_string(y = ycol), geom = 'line') +
+          stat_summary(fun = 'mean', aes_string(y = ycol), geom = 'line') + theme_few() +
           labs(y = yaxis_title, color = "")
     }
 
@@ -441,6 +439,17 @@ app$callback(
 )
 
 # Bar plot callback
+
+#' Creates a bar-plot based on data from the map and the map dropdown menu
+#'
+#' @param drop_down_list a list of countries selected using the dropdown menu
+#' @param selected_data a list of countries selected using the map
+#'
+#' @return a bar plot
+#' @export
+#'
+#' @examples
+#' (('Canada', 'Denmark', 'Poland'), ('Belarus', 'Lebanon'))
 app$callback(
   output = output(id = "bar_plot", property = "figure"),
   
