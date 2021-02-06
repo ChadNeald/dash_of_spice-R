@@ -392,10 +392,19 @@ app$callback(
     yaxis_title <- strsplit(ycol, "_")
     yaxis_title <- paste(yaxis_title[[1]], collapse = " ")
 
-country_plot <- plot_data %>%
+    country_plot <- plot_data %>%
       ggplot(aes(x = Year, color = Country)) +
           geom_line(aes_string(y = ycol)) +
           labs(y = yaxis_title, color = "")
+
+
+    if(length(drop_down_list) == 0) {
+      country_plot <- df %>%
+        ggplot(aes(x = Year)) +
+          stat_summary(fun = 'mean', aes_string(y = ycol), geom = 'line') +
+          labs(y = "Global Average", color = "")
+    }
+
     plotly_country <- ggplotly(country_plot)
     plotly_country <- plotly_country %>%
       layout(
