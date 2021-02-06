@@ -198,18 +198,17 @@ table <-
                 textAlign = 'center',
                 backgroundColor = 'white'
               ),
+              
+              style_cell_conditional = list(
+                list(
+                  'if' = list('state' = 'selected'),
+                  backgroundColor = 'white',
+                  border = '0.000001px solid grey80'
+                )
+              ),
+              
               style_header = list(
                 fontWeight = 'bold'
-              ),
-              css=list( # override default css for selected/focused table cells
-                list(
-                #'selector' = 'td.cell--selected, td.focused',
-                #'rule' = 'background-color: white;'
-                ), 
-                list(
-                #'selector' = 'td.cell--selected *, td.focused *',
-                #'rule' = 'color: white !important;'
-                )
               )
             ),
             htmlBr()
