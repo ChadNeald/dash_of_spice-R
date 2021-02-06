@@ -22,6 +22,19 @@ from docopt import docopt
 args = docopt(__doc__)
 
 def compute_weights():
+    """
+    Transforms the happiness metrics into a normalized matrix output for
+    fast computation of new happiness scores in dashboard.
+
+    Parameters:
+    ------
+    None
+
+    Returns:
+    -------
+    None
+
+    """
     # Starting dataset preprocessing
     print("\n\n##### compute_weights: Computing happiness weights")
     if verbose: print(f"Running compute_weights with arguments: \n {args}")
@@ -70,6 +83,18 @@ def compute_weights():
     print("\n##### preprocess_data: Finished computing weights")
 
 def validate_inputs():
+    """
+    Validates input CLI arguments to aid user
+
+    Parameters:
+    ------
+    None
+
+    Returns:
+    -------
+    None
+
+    """
     assert os.path.exists(input_file), "Invalid input filepath provided"
     if not os.path.exists(os.path.dirname(output_dir)):
         os.makedirs(os.path.dirname(output_dir))

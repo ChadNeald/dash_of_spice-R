@@ -1,3 +1,4 @@
+# Load libraries
 library(dash)
 library(dashHtmlComponents)
 library(dashCoreComponents)
@@ -12,13 +13,15 @@ library(comprehenr)
 library(purrr)
 library(ggthemes)
 
+# Initialize app, use bootstrap layout theme
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 app$title("Happy Navvy")
 
-# Load data
+# Load tidy data
 data_path = "data/processed/df_tidy.csv"
 df <- read.csv(data_path)
 
+# Get full list of unique countries
 unique_countries <- df %>%
     select(Country) %>%
     distinct() %>%
@@ -27,31 +30,42 @@ unique_countries <- df %>%
 # options for drop down country list
 options = to_list(for (c in unique_countries) options = list(label = c, value = c))
 
+# Filter the table to show important columns for 2020
 df_table <- df %>%
   filter(Year == "2020") %>%
   select(Happiness, Country, Rank)
 
-# Build a matrix for multiplying with slider vectors, 2020 only for now
+# Build a matrix for multiplying with slider vectors in happiness formula, 2020 only
 df_weights <- read.csv("data/processed/df_weights.csv")
 df_norm_metrics <- df_weights %>% 
   select(-bias) %>%
   as.matrix()
 
+# Extract the bias from the weights to add to happiness formula to map to original data
 df_norm_bias <- df_weights %>%
   select(bias)
 
-# Our happiness formula to map the slider changes to the original scores
+#' The true meaning of happiness! Our happiness function to convert the happiness
+#' slider choices into a single score biased to match the input data starting value.
+#'
+#' @param slider_vector A vector of the weights of each of the 6 happiness slider value
+#'
+#' @return A vector of recalculated happiness scores for each country
+#'
 compute_happiness <- function(slider_vector) {
   happiness <- round((10/6)*df_norm_metrics %*% (slider_vector*(6/sum(slider_vector))) + df_norm_bias, 3)
 }
 
-
-
-# margin customization to remove white box around it
-m <- list(l = 0, r = 0, b = 0, t = 0, pad = 10)
-
+#' The app callback of the reset button to reset the slider values and by extension map.
+#'
+#' @param updated_df An input dataframe with updated happiness scores
+#' @param drop_down_list An input list of selected countries from the search dropdown
+#'
+#' @return A wrangled dataframe for loading into the datatable component
+#'
 render_map <- function(input_df, drop_down_list = list()) {
-  # Need a dummy variable so one clicked country gets highlighted on the map
+  # Need a dummy variable so one clicked country gets highlighted on the map,
+  # this is a known issue with plotly choropleth
   dummy_variable = list(-1)
   highlighted_countries <- which(input_df$Country %in% drop_down_list) - 1
   
@@ -68,16 +82,30 @@ render_map <- function(input_df, drop_down_list = list()) {
                  zmax = 10,
                  width = 700,
                  height = 400,
-                 colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
+                 colorbar = list(title = 'Happiness', 
+                                 x = 1.0, 
+                                 y = 0.9,
+                                 len = 0.8, 
+                                 lenmode = 'fraction'),
                  z=~Happiness,
                  unselected = list(marker= list(opacity = 0.2)),
                  selectedpoints = array(highlighted_countries),
                  marker=list(line=list(color = 'black', width=0.2)
                  ))
+
+  # margin customization to remove white box around it
+  m <- list(l = 0, r = 0, b = 0, t = 0, pad = 10)
+
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
                  clickmode = 'event+select', autosize = FALSE, margin = m)#, dragmode = 'select')
 }
 
+#' The app callback of the reset button to reset the slider values and by extension map.
+#'
+#' @param updated_df An input dataframe with updated happiness scores
+#'
+#' @return A wrangled dataframe for loading into the datatable component
+#'
 update_table <- function(updated_df) {
   df_table_update <- updated_df %>% 
     arrange(desc(Happiness)) %>% 
@@ -88,14 +116,17 @@ update_table <- function(updated_df) {
 
 #-----------------------------------------------------------------
 
-# consolidating everything
+# App components: The app components are defined here to keep our layout tidy
 
+# The description string under the heading
 description <- "Welcome! Use the sliders to rank how important the different happiness metrics are to you, and we'll take care of the rest. Feel free to choose different countries to compare too!"
 
+# The icon link to our GitHub repo
 github <- htmlA(children = list(htmlImg(src="assets/github_logo.png", style = list(width = '15%', height = '5%', 'position' = 'relative', 'left' = '40%'))),
                 href = 'https://github.com/UBC-MDS/dash_of_spice-R',
                 style = list(width = '20%', height = '20%', 'position' = 'relative', 'left' = '32%'))
 
+# The happiness slider metrics component
 sliders <- htmlDiv(
   list(
             htmlH4("Happiness Metrics:"),
@@ -158,6 +189,7 @@ sliders <- htmlDiv(
   ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 10, 'width' = '90%', 'height' = '0%', 'border' = '40px white solid')
 )
 
+# The country search bar dropdown component
 country_dropdown <- dccDropdown(
                     options = options,
                     value = list(),
@@ -175,12 +207,14 @@ country_dropdown <- dccDropdown(
                     )
                     )
 
+# The rendered map HTML graph component
 map <- htmlDiv(
     list(
         dccGraph(id = "map", figure=render_map(df))
     )
 )
 
+# The top 10 result data table component
 table <- 
           list(
             htmlH4("Top 10 Countries", style = list('position' = 'relative', 'left' = '25%', 'top' = '10px')), 
@@ -215,7 +249,7 @@ table <-
             htmlBr()
           )
         
-
+# The country metric trend plot dropdown component
 metrics_dropdown <- dccDropdown(
               options=list(
                 list(label="Health", value="Life_expectancy"),
@@ -238,8 +272,13 @@ metrics_dropdown <- dccDropdown(
               )
             )
 
-# actual layout
 
+#' The Dash app layout
+#'
+#' @param An HTML div hierarchy of the app layout using bootstrap rows/columns
+
+#' @return Dash React HTML object
+#'
 app$layout(
   htmlDiv(
     list(
@@ -333,7 +372,19 @@ app$layout(
 
 # App Callbacks
 
-# Slider Callbacks
+#' The app callback of the reset button to reset the slider values and by extension map.
+#'
+#' @param health_value The health slider value
+#' @param free_value The freedom slider value
+#' @param econ_value The economy slider value
+#' @param ss_value The social support slider value
+#' @param gen_value The generosity slider value
+#' @param corr_value The corruption slider value
+#' @param drop_down_list A list of selected countries from the country dropdown
+#'
+#' @return A plotly choropleth map with updated happiness values/coloring
+#' @return An updated dataframe to populate the datatable
+#'
 app$callback(
   output = list(output(id = "map", property = "figure"),
                 output(id = "top_5_table", property = "data")),
@@ -355,7 +406,20 @@ app$callback(
   }
 )
 
-# Reset Button Callback, reset back to 5
+#' The app callback of the reset button to reset the slider values and by extension map.
+#'
+#' @param health_value The health slider value
+#' @param free_value The freedom slider value
+#' @param econ_value The economy slider value
+#' @param ss_value The social support slider value
+#' @param gen_value The generosity slider value
+#' @param corr_value The corruption slider value
+#'
+#' @return a list of standard slider weights (5 is mean) for each slider
+#''
+#' @examples
+#' ((5,5,5,5,5,5))
+#'
 app$callback(
   output = list(output(id = "slider_health", property = "value"),
                 output(id = "slider_free", property = "value"),
@@ -369,9 +433,14 @@ app$callback(
   }
 )
 
-###################################################################################
-
-# Yearly trends plot
+#' The app callback to update the yearly trends with the selected countries
+#'
+#' @param ycol The happiness metric to display from the dropdown
+#' @param country_drop_down a list of countries selected from the country dropdown
+#' @param selected_data a list of countries selected using the map
+#'
+#' @return a plotly plot of the yearly metric trend of the chosen countries
+#'
 app$callback(
   output = output(id = "country_plot", property = "figure"),
                 
@@ -422,6 +491,14 @@ country_plot <- plot_data %>%
   }
 )
 
+#' The app callback to update the dropdown with selected map values
+#'
+#' @param selected_data a list of countries selected using the map
+#'
+#' @return a list of country selections to populate the dropdown
+#'
+#' @examples
+#' (('Canada', 'Denmark', 'Poland'), ('Belarus', 'Lebanon'))
 app$callback(
   output = list(output(id = "country_drop_down", property = "value")),
   params = list(input(id = "map", property = "selectedData")),
@@ -434,15 +511,12 @@ app$callback(
   }
 )
 
-# Bar plot callback
-
 #' Creates a bar-plot based on data from the map and the map dropdown menu
 #'
 #' @param drop_down_list a list of countries selected using the dropdown menu
 #' @param selected_data a list of countries selected using the map
 #'
 #' @return a bar plot
-#' @export
 #'
 #' @examples
 #' (('Canada', 'Denmark', 'Poland'), ('Belarus', 'Lebanon'))
@@ -517,7 +591,6 @@ app$callback(
       # Bar plot for more than one country
       bar_fig <- ggplot(data=country_list, aes(x=Happiness, y=reorder(Country, Happiness), fill=-Rank, label = Rank)) +
         geom_bar(stat="summary") +
- #       coord_fixed(ratio = 2.5) +
         labs(fill = "Rank", x = 'Happiness Score', title = "2020 Happiness Scores") +
         scale_fill_gradient(low = "slategray2", high = "yellow1") +
         scale_x_continuous(limits = c(0, 10)) +
