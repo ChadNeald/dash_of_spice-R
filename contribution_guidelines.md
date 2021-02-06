@@ -43,4 +43,4 @@ Description of suggestions and potential fixes you would like to see.
 ```
 
 ## Maintaners
-This repository is currently maintained by @rachelywong, @ChadNeald, @cmmclaug, and @Saule-Atymtayeva. 
+This repository is currently maintained by [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug). 
