@@ -12,8 +12,8 @@ library(comprehenr)
 library(purrr)
 library(ggthemes)
 
-
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
+app$title("Happy Navvy")
 
 # Load data
 data_path = "data/processed/df_tidy.csv"
@@ -67,14 +67,16 @@ render_map <- function(input_df, drop_down_list = list()) {
                  colorscale = 'Portland',
                  zmin = 0,
                  zmax = 10,
+                 width = 700,
+                 height = 400,
                  colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
                  z=~Happiness,
-                 unselected = list(marker= list(opacity = 0.1)),
+                 unselected = list(marker= list(opacity = 0.2)),
                  selectedpoints = array(highlighted_countries),
                  marker=list(line=list(color = 'black', width=0.2)
                  ))
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
-                 clickmode = 'event+select', autosize = FALSE, width = 700, height = 400, margin = m)#, dragmode = 'select')
+                 clickmode = 'event+select', autosize = FALSE, margin = m)#, dragmode = 'select')
 }
 
 update_table <- function(updated_df) {
@@ -179,7 +181,6 @@ map <- htmlDiv(
         dccGraph(id = "map", figure=render_map(df))
     )
 )
-
 table <- 
           list(
             htmlH4("Top 10 Countries", style = list('position' = 'relative', 'left' = '25%', 'top' = '10px')), 
@@ -216,6 +217,39 @@ table <-
             ),
             htmlBr()
           )
+# table <- 
+#           list(
+#             htmlH4("Top 10 Countries", style = list('position' = 'relative', 'left' = '25%', 'top' = '10px')), 
+#             htmlBr(),
+#             htmlP(paste("Countries ranked according to your most important values."), style = list('position' = 'relative', 'left' = '6.5%')),
+#             dashDataTable(
+#               id = "top_5_table",
+#               columns = lapply(colnames(df_table),
+#               function(colName){
+#                 list(
+#                   id = colName,
+#                   name = colName
+#                 )
+#               }),
+#               data_previous = df_to_list(df_table),
+#               style_table = list(width = "300px", height = '900px', margin = 'auto'),
+#               style_cell = list(
+#                 textAlign = 'center',
+#                 backgroundColor = 'white'
+#               ),
+#               style_header = list(
+#                 fontWeight = 'bold'
+#               ),
+#               style_cell_conditional = list(
+#                 list(
+#                   'if' = list('state' = 'selected'),
+#                   backgroundColor = 'white',
+#                   border = '0.000001px solid grey80'
+#                 )
+#               )
+#             ),
+#             htmlBr()
+#           )
         
 
 metrics_dropdown <- dccDropdown(
@@ -440,6 +474,17 @@ app$callback(
 )
 
 # Bar plot callback
+
+#' Creates a bar-plot based on data from the map and the map dropdown menu
+#'
+#' @param drop_down_list a list of countries selected using the dropdown menu
+#' @param selected_data a list of countries selected using the map
+#'
+#' @return a bar plot
+#' @export
+#'
+#' @examples
+#' (('Canada', 'Denmark', 'Poland'), ('Belarus', 'Lebanon'))
 app$callback(
   output = output(id = "bar_plot", property = "figure"),
   
@@ -473,7 +518,7 @@ app$callback(
           geom_bar(stat = 'identity') +
           coord_cartesian(xlim = c(2,8)) +
           labs(x = "Mean Happiness Score",
-               title = "Global Average Happiness Score", fill = "Mean Happiness Score") +
+               title = "Global Average Happiness Score", fill = "Happiness") +
                scale_fill_gradient(low = "khaki3", high = "yellow1") +
                theme_bw() +
                theme(axis.text = element_text(size = 10),
