@@ -11,6 +11,7 @@ library(tidyverse)
 library(comprehenr)
 library(purrr)
 
+
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
 
 # Load data
@@ -48,7 +49,16 @@ compute_happiness <- function(slider_vector) {
 # margin customization to remove white box around it
 m <- list(l = 0, r = 0, b = 0, t = 0, pad = 10)
 
-render_map <- function(input_df) {
+render_map <- function(input_df, drop_down_list = list()) {
+  print("map")
+  # Need a dummy variable so one clicked country gets highlighted on the map
+  dummy_variable = list(-1)
+  highlighted_countries <- which(input_df$Country %in% drop_down_list) - 1
+  
+  if (length(highlighted_countries) == 1) {
+      highlighted_countries <- c(highlighted_countries, dummy_variable)
+  }
+  
   map <- plot_ly(input_df, 
                  type='choropleth', 
                  locations=~Country, 
@@ -59,6 +69,7 @@ render_map <- function(input_df) {
                  colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
                  z=~Happiness,
                  unselected = list(marker= list(opacity = 0.1)),
+                 selectedpoints = array(highlighted_countries),
                  marker=list(line=list(color = 'black', width=0.2)
                  ))
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
@@ -71,24 +82,6 @@ update_table <- function(updated_df) {
     slice(1:10)
   
   return(df_table_update)
-}
-
-render_bar_plot <- function(updated_df) {
-  country_list <- updated_df %>%
-    arrange(desc(Happiness)) %>% 
-    slice(1:10) %>% 
-    select(Rank, Country) %>% 
-    arrange(Rank)
-  
-  bar_fig <- ggplot(data=country_list, aes(x=Rank, y=reorder(Country, -Rank), fill=-Rank, label = Rank)) +
-    geom_bar(stat="identity") +
-    labs(fill = "Rank") +
-    scale_fill_gradient2(low="grey", mid="yellow", high="green") +
-    theme_bw() +
-    theme(axis.title.y = element_blank(),
-          panel.border = element_blank())
-  
-  return(ggplotly(bar_fig, tooltip = "label"))
 }
 
 #-----------------------------------------------------------------
@@ -165,7 +158,7 @@ sliders <- htmlDiv(
 
 country_dropdown <- dccDropdown(
                     options = options,
-                    value = list("Canada", "United States"),
+                    value = list(),
                     id = "country_drop_down",
                     multi = TRUE,
                     style=list(
@@ -343,22 +336,23 @@ app$layout(
 # Slider Callbacks
 app$callback(
   output = list(output(id = "map", property = "figure"),
-                output(id = "top_5_table", property = "data"),
-                output(id = "bar_plot", property = "figure")),
+                output(id = "top_5_table", property = "data")),
   params = list(input(id = "slider_health", property = "value"),
                 input(id = "slider_free", property = "value"),
                 input(id = "slider_econ", property = "value"),
                 input(id = "slider_ss", property = "value"),
                 input(id = "slider_gen", property = "value"),
-                input(id = "slider_corr", property = "value")),
-  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value) {
+                input(id = "slider_corr", property = "value"),
+                input(id = "country_drop_down", property = "value")),
+  function(health_value, free_value, econ_value, ss_value, gen_value, corr_value, drop_down_list) {
+    print("sliders")
     slider_weights <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
     
     df_update <- df_table %>% 
       select(Country, Rank)
     df_update[, "Happiness"] <- compute_happiness(slider_weights)
-    
-    return <- list(render_map(df_update), update_table(df_update), render_bar_plot(df_update))
+
+    return <- list(render_map(df_update, drop_down_list), update_table(df_update))
   }
 )
 
@@ -387,6 +381,7 @@ app$callback(
                 input(id = "map", property = "selectedData")),
   
   function(ycol, drop_down_list, selected_data) {
+    print("years")
     # Getting the selected contries from the map into a nice format 
     map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
     map_selections <- strsplit(map_selections[[1]], ", ")
@@ -400,10 +395,21 @@ app$callback(
     yaxis_title <- strsplit(ycol, "_")
     yaxis_title <- paste(yaxis_title[[1]], collapse = " ")
 
-country_plot <- plot_data %>%
+    country_plot <- plot_data %>%
       ggplot(aes(x = Year, color = Country)) +
           geom_line(aes_string(y = ycol)) +
           labs(y = yaxis_title, color = "")
+
+
+    if(length(drop_down_list) == 0) {
+      df_global <- df
+      df_global$GlobalAverage = 'Global Average'
+      country_plot <- df_global %>%
+        ggplot(aes(x = Year, color = GlobalAverage)) +
+          stat_summary(fun = 'mean', aes_string(y = ycol), geom = 'line') +
+          labs(y = yaxis_title, color = "")
+    }
+
     plotly_country <- ggplotly(country_plot)
     plotly_country <- plotly_country %>%
       layout(
@@ -417,5 +423,109 @@ country_plot <- plot_data %>%
   }
 )
 
-#app$run_server(debug = F)
-app$run_server(host = '0.0.0.0') # for deploying on heroku
+app$callback(
+  output = list(output(id = "country_drop_down", property = "value")),
+  params = list(input(id = "map", property = "selectedData")),
+  function(selected_data) {
+    print("callback")
+    map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
+    map_selections <- strsplit(map_selections[[1]], ", ")
+    map_selections <- map_selections[[1]]
+    
+    return <- list(map_selections)
+  }
+)
+
+# Bar plot callback
+app$callback(
+  output = output(id = "bar_plot", property = "figure"),
+  
+  params = list(input(id = "country_drop_down", property = "value"),
+                input(id = "map", property = "selectedData")),
+  
+  function(drop_down_list, selected_data) {
+    print("bar")
+    print(length(drop_down_list))
+    # Getting the selected contries from the map into a nice format
+    map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
+    map_selections <- strsplit(map_selections[[1]], ", ")
+    map_selections <- map_selections[[1]]
+    
+    # Filter by drop down countries and map selection countries
+    country_list <- df_table %>%
+      filter(Country %in% drop_down_list | Country %in% map_selections)%>%
+      arrange(Rank)
+    
+    # Plot global average bar chart when no countries are selected
+    if(length(drop_down_list) == 0){
+      df_bar_global <- df %>%
+        group_by(Year) %>%
+        summarize(mean_happiness = mean(Happiness))
+      df_bar_global$Year = as.factor(df_bar_global$Year)
+      df_bar_global$Year <- fct_rev(df_bar_global$Year)
+      df_bar_global$Score <- df_bar_global$mean_happiness
+
+      bar_fig_global <- df_bar_global %>%
+          ggplot(aes(x=mean_happiness, y=Year, fill=mean_happiness, label = Score)) +
+          geom_bar(stat = 'identity') +
+          coord_cartesian(xlim = c(2,8)) +
+          labs(x = "Mean Happiness Score",
+               title = "Global Average Happiness Score", fill = "Mean Happiness Score") +
+               scale_fill_gradient(low = "khaki3", high = "yellow1") +
+               theme_bw() +
+               theme(axis.text = element_text(size = 10),
+                     legend.title = element_text(size = 9),
+                     legend.text = element_text(size = 8),
+                     axis.title.y = element_blank(),
+                     panel.border = element_blank())  
+
+      return(ggplotly(bar_fig_global, tooltip = "Score"))
+    }
+
+    if (nrow(country_list) == 1) {
+      
+      df_table_all <- df %>%
+        select(Happiness, Country, Rank, Year)%>%
+        filter(Country %in% drop_down_list | Country %in% map_selections) %>%
+        arrange(Year)
+      
+      # Bar plot for one country
+      bar_fig <- ggplot(data=df_table_all, aes(x=Happiness, y=reorder(-Year, Country), fill=Happiness, label = Rank)) +
+        geom_bar(position = position_dodge(width = 0.1), stat = "identity") +
+        ggtitle(paste0("Happiness trend for ", df_table_all$Country)) +
+        labs(x = 'Happiness Score') +
+        scale_fill_gradient(low = "khaki3", high = "yellow1") +
+        coord_cartesian(xlim = c(2, 8)) +
+        theme_bw() +
+        theme(plot.title = element_text(size = 12),
+              axis.text = element_text(size = 10),
+              legend.title = element_text(size = 9),
+              legend.text = element_text(size = 8),
+              axis.title.y = element_blank(),
+              panel.border = element_blank())
+      
+    return(ggplotly(bar_fig, tooltip = "label"))
+      
+    } else {
+      # Bar plot for more than one country
+      bar_fig <- ggplot(data=country_list, aes(x=Happiness, y=reorder(Country, Happiness), fill=-Rank, label = Rank)) +
+        geom_bar(stat="summary") +
+ #       coord_fixed(ratio = 2.5) +
+        labs(fill = "Rank", x = 'Happiness Score', title = "2020 Happiness Scores") +
+        scale_fill_gradient(low = "slategray2", high = "yellow1") +
+        coord_cartesian(xlim = c(2, 8)) +
+        theme_bw() +
+        theme(axis.text = element_text(size = 10),
+              legend.title = element_text(size = 9),
+              legend.text = element_text(size = 8),
+              axis.title.y = element_blank(),
+              panel.border = element_blank())      
+      
+      print(country_list)
+      return(ggplotly(bar_fig, tooltip = "label"))
+    }
+  }
+)
+
+app$run_server(debug = F)
+#app$run_server(host = '0.0.0.0') # for deploying on heroku
