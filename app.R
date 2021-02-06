@@ -67,14 +67,16 @@ render_map <- function(input_df, drop_down_list = list()) {
                  colorscale = 'Portland',
                  zmin = 0,
                  zmax = 10,
+                 width = 700,
+                 height = 400,
                  colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
                  z=~Happiness,
-                 unselected = list(marker= list(opacity = 0.1)),
+                 unselected = list(marker= list(opacity = 0.2)),
                  selectedpoints = array(highlighted_countries),
                  marker=list(line=list(color = 'black', width=0.2)
                  ))
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
-                 clickmode = 'event+select', autosize = FALSE, width = 700, height = 400, margin = m)#, dragmode = 'select')
+                 clickmode = 'event+select', autosize = FALSE, margin = m)#, dragmode = 'select')
 }
 
 update_table <- function(updated_df) {
@@ -472,7 +474,7 @@ app$callback(
           geom_bar(stat = 'identity') +
           coord_cartesian(xlim = c(2,8)) +
           labs(x = "Mean Happiness Score",
-               title = "Global Average Happiness Score", fill = "Mean Happiness Score") +
+               title = "Global Average Happiness Score", fill = "Happiness") +
                scale_fill_gradient(low = "khaki3", high = "yellow1") +
                theme_bw() +
                theme(axis.text = element_text(size = 10),

@@ -40,6 +40,9 @@ def compute_weights():
                        'Generosity', 
                        'Corruption']]
 
+    # Invert the corruption scores, high is bad for 2020!
+    metrics['Corruption'] = -1 * metrics['Corruption']
+
     # Use sklearn min-max scalar to normalize all metrics between 0-1
     scaled_metrics = MinMaxScaler().fit_transform(metrics)
     scaled_metrics_df = pd.DataFrame(scaled_metrics, columns = ['gdp_norm',
