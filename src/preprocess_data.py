@@ -3,7 +3,7 @@ Author: Dash-of-Spice
 
 Date: Jan. 22, 2021
 
-Preprocess raw happiness datasets
+Preprocess raw yearly happiness datasets into a single standardized output dataframe
 
 Usage: preprocess_data.py -i=<input> -o=<output> [-v]
 
@@ -21,6 +21,19 @@ from docopt import docopt
 args = docopt(__doc__)
 
 def preprocess_data():
+    """
+    The main pre-processing script to convert a directory of raw yearly csv 
+    files into a single tidy dataframe (csv/pickle) output for the dashboard
+
+    Parameters:
+    ------
+    None
+
+    Returns:
+    -------
+    None
+
+    """
     # Starting dataset preprocessing
     print("\n\n##### preprocess_data: Preprocessing datasets")
     if verbose: print(f"Running preprocess_data with arguments: \n {args}")
@@ -50,6 +63,22 @@ def preprocess_data():
     print("\n##### preprocess_data: Finished preprocessing")
 
 def wrangle_year_df(year_df, year):
+    """
+    Standardizes all of the input year dataframes into a common dataframe format
+
+    Parameters:
+    ------
+    year_df: (DataFrame)
+    the input dataframe for a given year
+
+    year: (str)
+    The year the input dataframe was taken from, each year has a unique format
+
+    Returns:
+    -------
+    A dataframe returned in a standardized format: (Dataframe)
+
+    """
     # Unfortunately all the year data csvs have different #'s of columns and names...
     drop_columns_list = []
     if year == '2015':
@@ -179,6 +208,18 @@ def sync_country_names(tidy_df):
     return combined_df
 
 def validate_inputs():
+    """
+    Validates input CLI arguments to aid user
+
+    Parameters:
+    ------
+    None
+
+    Returns:
+    -------
+    None
+
+    """
     assert os.path.exists(input_dir), "Invalid input directory path provided"
     if not os.path.exists(os.path.dirname(output_dir)):
         os.makedirs(os.path.dirname(output_dir))
