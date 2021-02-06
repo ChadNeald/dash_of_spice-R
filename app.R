@@ -533,5 +533,5 @@ app$callback(
   }
 )
 
-app$run_server(debug = F)
-#app$run_server(host = '0.0.0.0') # for deploying on heroku
+#app$run_server(debug = F)
+app$run_server(host = '0.0.0.0') # for deploying on heroku
