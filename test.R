@@ -10,10 +10,9 @@ library(tidyr)
 library(tidyverse)
 library(comprehenr)
 library(purrr)
-library(ggthemes)
+
 
 app <- Dash$new(external_stylesheets = dbcThemes$BOOTSTRAP)
-app$title("Happy Navvy")
 
 # Load data
 data_path = "data/processed/df_tidy.csv"
@@ -51,6 +50,7 @@ compute_happiness <- function(slider_vector) {
 m <- list(l = 0, r = 0, b = 0, t = 0, pad = 10)
 
 render_map <- function(input_df, drop_down_list = list()) {
+  print("map")
   # Need a dummy variable so one clicked country gets highlighted on the map
   dummy_variable = list(-1)
   highlighted_countries <- which(input_df$Country %in% drop_down_list) - 1
@@ -66,16 +66,14 @@ render_map <- function(input_df, drop_down_list = list()) {
                  colorscale = 'Portland',
                  zmin = 0,
                  zmax = 10,
-                 width = 700,
-                 height = 400,
                  colorbar = list(title = 'Happiness', x = 1.0, y = 0.9),
                  z=~Happiness,
-                 unselected = list(marker= list(opacity = 0.2)),
+                 unselected = list(marker= list(opacity = 0.1)),
                  selectedpoints = array(highlighted_countries),
                  marker=list(line=list(color = 'black', width=0.2)
                  ))
   map %>% layout(geo = list(projection = list(type = "natural earth"), showframe = FALSE),
-                 clickmode = 'event+select', autosize = FALSE, margin = m)#, dragmode = 'select')
+                 clickmode = 'event+select', autosize = FALSE, width = 700, height = 400, margin = m)#, dragmode = 'select')
 }
 
 update_table <- function(updated_df) {
@@ -144,7 +142,7 @@ sliders <- htmlDiv(
           value=5,
           marks=list("0" = "0", "5" = "5", "10" = "10")
         ),
-        dbcLabel("Minimal Corruption"),
+        dbcLabel("Corruption"),
         dccSlider(
           id="slider_corr",
           min=0,
@@ -185,7 +183,7 @@ table <-
           list(
             htmlH4("Top 10 Countries", style = list('position' = 'relative', 'left' = '25%', 'top' = '10px')), 
             htmlBr(),
-            htmlP(paste("Countries ranked according to your most important values."), style = list('position' = 'relative', 'left' = '6.5%', width = '250px')),
+            htmlP(paste("Countries ranked according to your most important values."), style = list('position' = 'relative', 'left' = '6.5%')),
             dashDataTable(
               id = "top_5_table",
               columns = lapply(colnames(df_table),
@@ -196,7 +194,7 @@ table <-
                 )
               }),
               data_previous = df_to_list(df_table),
-              style_table = list(width = "250px", height = '900px', margin = 'auto'),
+              style_table = list(width = "300px", height = '900px', margin = 'auto'),
               style_cell = list(
                 textAlign = 'center',
                 backgroundColor = 'white'
@@ -204,11 +202,14 @@ table <-
               style_header = list(
                 fontWeight = 'bold'
               ),
-              style_cell_conditional = list(
+              css=list( # override default css for selected/focused table cells
                 list(
-                  'if' = list('state' = 'selected'),
-                  backgroundColor = 'white',
-                  border = '0.000001px solid grey80'
+                #'selector' = 'td.cell--selected, td.focused',
+                #'rule' = 'background-color: white;'
+                ), 
+                list(
+                #'selector' = 'td.cell--selected *, td.focused *',
+                #'rule' = 'color: white !important;'
                 )
               )
             ),
@@ -223,7 +224,7 @@ metrics_dropdown <- dccDropdown(
                 list(label="Economy", value="GDP_per_capita"),
                 list(label="Social Support", value="Social_support"),
                 list(label="Generosity", value="Generosity"),
-                list(label="Minimal Corruption", value="Corruption")
+                list(label="Corruption", value="Corruption")
               ),
               value = "Freedom",
               id = "yaxis_feature",
@@ -281,7 +282,7 @@ app$layout(
                 dbcCard(
                   list(
                     dbcCardHeader(list(country_dropdown, htmlH4("Choose your countries: "))),
-                    dbcCardBody(map, style = list('position' = 'relative', 'left' = '90px'))
+                    dbcCardBody(map)
                   ), color = 'warning', outline = 'True' 
                 ), style = list('position' = 'relative', 'right' = '50px', 'top' = '6%', 'width' = '60rem')
               )
@@ -319,12 +320,11 @@ app$layout(
       dbcRow(
         list(
           htmlH1("Dash Of Spice", style=list(color = 'black', 'align' = 'center', 'position' = 'relative', 'left' = '39%')),
-          github,
-          htmlP(paste("the secret spice ☺ "), style = list(color = 'white', 'position' = 'relative', 'left' = '5%', 'bottom' = '60px')) # a secret 🌶️
+          github    
         ), 
         style = list(padding = '1%', height = '10%', backgroundColor = '#ffd803b9', 'min-width' = 'unset', display='flex', 'vertical-align' = 'top')
       )
-    ), style = list(overflow = 'hidden')
+    )
   )
 )
 
@@ -345,6 +345,7 @@ app$callback(
                 input(id = "slider_corr", property = "value"),
                 input(id = "country_drop_down", property = "value")),
   function(health_value, free_value, econ_value, ss_value, gen_value, corr_value, drop_down_list) {
+    print("sliders")
     slider_weights <- c(health_value, free_value, econ_value, ss_value, gen_value, corr_value) # create slider value vector
     
     df_update <- df_table %>% 
@@ -380,6 +381,7 @@ app$callback(
                 input(id = "map", property = "selectedData")),
   
   function(ycol, drop_down_list, selected_data) {
+    print("years")
     # Getting the selected contries from the map into a nice format 
     map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
     map_selections <- strsplit(map_selections[[1]], ", ")
@@ -393,9 +395,8 @@ app$callback(
     yaxis_title <- strsplit(ycol, "_")
     yaxis_title <- paste(yaxis_title[[1]], collapse = " ")
 
-
-country_plot <- plot_data %>%
-      ggplot(aes(x = Year, color = Country)) + theme_few() +
+    country_plot <- plot_data %>%
+      ggplot(aes(x = Year, color = Country)) +
           geom_line(aes_string(y = ycol)) +
           labs(y = yaxis_title, color = "")
 
@@ -405,7 +406,7 @@ country_plot <- plot_data %>%
       df_global$GlobalAverage = 'Global Average'
       country_plot <- df_global %>%
         ggplot(aes(x = Year, color = GlobalAverage)) +
-          stat_summary(fun = 'mean', aes_string(y = ycol), geom = 'line') + theme_few() +
+          stat_summary(fun = 'mean', aes_string(y = ycol), geom = 'line') +
           labs(y = yaxis_title, color = "")
     }
 
@@ -426,6 +427,7 @@ app$callback(
   output = list(output(id = "country_drop_down", property = "value")),
   params = list(input(id = "map", property = "selectedData")),
   function(selected_data) {
+    print("callback")
     map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
     map_selections <- strsplit(map_selections[[1]], ", ")
     map_selections <- map_selections[[1]]
@@ -435,17 +437,6 @@ app$callback(
 )
 
 # Bar plot callback
-
-#' Creates a bar-plot based on data from the map and the map dropdown menu
-#'
-#' @param drop_down_list a list of countries selected using the dropdown menu
-#' @param selected_data a list of countries selected using the map
-#'
-#' @return a bar plot
-#' @export
-#'
-#' @examples
-#' (('Canada', 'Denmark', 'Poland'), ('Belarus', 'Lebanon'))
 app$callback(
   output = output(id = "bar_plot", property = "figure"),
   
@@ -453,6 +444,8 @@ app$callback(
                 input(id = "map", property = "selectedData")),
   
   function(drop_down_list, selected_data) {
+    print("bar")
+    print(length(drop_down_list))
     # Getting the selected contries from the map into a nice format
     map_selections <- (list(toString(selected_data[[1]] %>% map_chr('location'))))
     map_selections <- strsplit(map_selections[[1]], ", ")
@@ -477,7 +470,7 @@ app$callback(
           geom_bar(stat = 'identity') +
           coord_cartesian(xlim = c(2,8)) +
           labs(x = "Mean Happiness Score",
-               title = "Global Average Happiness Score", fill = "Happiness") +
+               title = "Global Average Happiness Score", fill = "Mean Happiness Score") +
                scale_fill_gradient(low = "khaki3", high = "yellow1") +
                theme_bw() +
                theme(axis.text = element_text(size = 10),
@@ -503,7 +496,7 @@ app$callback(
         labs(x = 'Happiness Score') +
         scale_fill_gradient(low = "khaki3", high = "yellow1") +
         coord_cartesian(xlim = c(2, 8)) +
-        theme_few() +
+        theme_bw() +
         theme(plot.title = element_text(size = 12),
               axis.text = element_text(size = 10),
               legend.title = element_text(size = 9),
@@ -520,14 +513,15 @@ app$callback(
  #       coord_fixed(ratio = 2.5) +
         labs(fill = "Rank", x = 'Happiness Score', title = "2020 Happiness Scores") +
         scale_fill_gradient(low = "slategray2", high = "yellow1") +
-        scale_x_continuous(limits = c(0, 10)) +
-        theme_few() +
+        coord_cartesian(xlim = c(2, 8)) +
+        theme_bw() +
         theme(axis.text = element_text(size = 10),
               legend.title = element_text(size = 9),
               legend.text = element_text(size = 8),
               axis.title.y = element_blank(),
               panel.border = element_blank())      
       
+      print(country_list)
       return(ggplotly(bar_fig, tooltip = "label"))
     }
   }
