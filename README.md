@@ -1,7 +1,7 @@
 # Dash-of-Spice: Happiness Navigator
 
 ## Link to Dashboard
-Please find our dashboard [here](https://happy-navvy-r.herokuapp.com/).
+You can find our dashboard [here](https://happy-navvy-r.herokuapp.com/)! Please view in full screen.
 
 ## App Description
 
