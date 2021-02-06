@@ -203,14 +203,11 @@ table <-
               style_header = list(
                 fontWeight = 'bold'
               ),
-              css=list( # override default css for selected/focused table cells
+              style_cell_conditional = list(
                 list(
-                #'selector' = 'td.cell--selected, td.focused',
-                #'rule' = 'background-color: white;'
-                ), 
-                list(
-                #'selector' = 'td.cell--selected *, td.focused *',
-                #'rule' = 'color: white !important;'
+                  'if' = list('state' = 'selected'),
+                  backgroundColor = 'white',
+                  border = '0.000001px solid grey80'
                 )
               )
             ),
@@ -440,6 +437,17 @@ app$callback(
 )
 
 # Bar plot callback
+
+#' Creates a bar-plot based on data from the map and the map dropdown menu
+#'
+#' @param drop_down_list a list of countries selected using the dropdown menu
+#' @param selected_data a list of countries selected using the map
+#'
+#' @return a bar plot
+#' @export
+#'
+#' @examples
+#' (('Canada', 'Denmark', 'Poland'), ('Belarus', 'Lebanon'))
 app$callback(
   output = output(id = "bar_plot", property = "figure"),
   
