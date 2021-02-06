@@ -37,7 +37,24 @@ With the stigma surrounding mental health slowly evaporating and more people are
 At Dash of Spice, we are a team of data scientists working for an immigration consulting company. The founders of Dash of Spice - [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug) - are friends from the Master of Data Science program at The University of British Columbia. The development of Happy Navvy was made in part of the course DSCI 532 - Data Visualization II. 
 
 ## Come join us!
-We are always looking for future improvements and additions. Specifically, we are hoping to integrate an algorithm that incorporates all user specified features to calculate the most accurate happiness ranking of suggested countries for users. 
-
 If you are interested in joining us, please check out our [contribution file](https://github.com/UBC-MDS/dash_of_spice/blob/main/contribution_guidelines.md) for more information! 
+
+## Instructions on running the app locally
+To run the app locally and reproduce yourself, fork this repo and follow the below steps in your local repository root:
+
+1. Create a new Python conda environment to run data wrangling scripts:
+`conda env create -f /env/happy_navvy.yaml`
+
+2. Activate the conda environment:
+`conda activate happy_navvy`
+
+3. (Optional) Execute the raw data pre-processing script
+`python src/preprocess_data.py -i data/raw -o data/processed/`
+
+4. (Optional) Execute the happiness computation weighting script
+`python src/compute_weights.py -i data/processed/tidy_happy.pkl -o data/processed/`
+
+5. Install R packages
+`Rscript init.R`
+
 
