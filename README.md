@@ -17,7 +17,7 @@ The final dashboard in all its glory! Try and find the hidden easter egg!
 
 <br />
 
-![Final Dashboard](assets/gif_demonstration.gif)
+![Final Dashboard](assets/gifception.gif)
 
 ## What are we doing?
 At Dash of Spice, we aim to provide an easy-to-use application to individuals and families looking to immigrate to a country that aligns best with their values. Our dashboard utilizes a user's key values to suggest countries that would provide maximum happiness if they immigrated there.
