@@ -52,10 +52,10 @@ To run the app locally and reproduce yourself, fork this repo and follow the bel
 6. Run Dash
 `Rscript app.R` 
 
-7. Run Dash Run! Enter the local server URL into your browser: http://127.0.0.1:8050
+7. Run Dash Run! Comment out `app$run_server(host = '0.0.0.0')` in the app.R file (this is just for Heroku deployment) and switch it to `app$run_server(debug = F)`. Enter the local server URL into your browser: http://127.0.0.1:8050
 
 ## Who are we?
-At Dash of Spice, we are a team of data scientists working for an fictional immigration consulting company. The founders of Dash of Spice - [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug) - are friends from the Master of Data Science program at The University of British Columbia. The development of Happy Navvy was made in part of the course DSCI 532 - Data Visualization II. 
+At Dash of Spice, we are a team of data scientists working for a fictional immigration consulting company. The founders of Dash of Spice - [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug) - are friends from the Master of Data Science program at The University of British Columbia. The development of Happy Navvy was made in part of the course DSCI 532 - Data Visualization II. 
 
 ## Come join us!
 If you are interested in joining us, please check out our [contribution file](https://github.com/UBC-MDS/dash_of_spice-R/blob/main/contribution_guidelines.md) for more information! 

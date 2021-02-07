@@ -63,7 +63,7 @@ To run the app locally and reproduce yourself, fork this repo and follow the bel
 6. Run Dash
 `Rscript app.R` 
 
-7. Run Dash Run! Enter the local server URL into your browser: http://127.0.0.1:8050
+7. Run Dash Run! Comment out `app$run_server(host = '0.0.0.0')` in the app.R file (this is just for Heroku deployment) and switch it to `app$run_server(debug = F)`. Enter the local server URL into your browser: http://127.0.0.1:8050
 
 ## Maintaners
 This repository is currently maintained by [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug). 
