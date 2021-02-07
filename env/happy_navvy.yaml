@@ -1,0 +1,11 @@
+name: 'happy_navvy'
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - ipykernel
+  - ipython
+  - matplotlib
+  - pandas
+  - docopt
+  - scikit-learn
