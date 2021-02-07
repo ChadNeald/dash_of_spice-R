@@ -23,9 +23,9 @@ df <- read.csv(data_path)
 
 # Get full list of unique countries
 unique_countries <- df %>%
-    select(Country) %>%
-    distinct() %>%
-    pull(1)
+  select(Country) %>%
+  distinct() %>%
+  pull(1)
 
 # options for drop down country list
 options = to_list(for (c in unique_countries) options = list(label = c, value = c))
@@ -70,7 +70,7 @@ render_map <- function(input_df, drop_down_list = list()) {
   highlighted_countries <- which(input_df$Country %in% drop_down_list) - 1
   
   if (length(highlighted_countries) == 1) {
-      highlighted_countries <- c(highlighted_countries, dummy_variable)
+    highlighted_countries <- c(highlighted_countries, dummy_variable)
   }
   
   map <- plot_ly(input_df, 
@@ -129,94 +129,93 @@ github <- htmlA(children = list(htmlImg(src="assets/github_logo.png", style = li
 # The happiness slider metrics component
 sliders <- htmlDiv(
   list(
-            htmlH4("Happiness Metrics:"),
-        dbcLabel("Health"),
-        dccSlider(
-          id="slider_health",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Freedom"),
-        dccSlider(
-          id="slider_free",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Economy"),
-        dccSlider(
-          id="slider_econ",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Social support"),
-        dccSlider(
-          id="slider_ss",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Generosity"),
-        dccSlider(
-          id="slider_gen",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        dbcLabel("Minimal Corruption"),
-        dccSlider(
-          id="slider_corr",
-          min=0,
-          max=10,
-          step=1,
-          value=5,
-          marks=list("0" = "0", "5" = "5", "10" = "10")
-        ),
-        htmlBr(),
-        htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'white'))
+    htmlH4("Happiness Metrics:"),
+    dbcLabel("Health"),
+    dccSlider(
+      id="slider_health",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Freedom"),
+    dccSlider(
+      id="slider_free",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Economy"),
+    dccSlider(
+      id="slider_econ",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Social support"),
+    dccSlider(
+      id="slider_ss",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Generosity"),
+    dccSlider(
+      id="slider_gen",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    dbcLabel("Minimal Corruption"),
+    dccSlider(
+      id="slider_corr",
+      min=0,
+      max=10,
+      step=1,
+      value=5,
+      marks=list("0" = "0", "5" = "5", "10" = "10")
+    ),
+    htmlBr(),
+    htmlButton("Reset", id="reset_button", n_clicks=0, style=list('width' = '95%', 'backgroundColor' = 'white'))
   ), style = list('backgroundColor' = '#ffd803b9', 'padding' = 10, 'width' = '90%', 'height' = '0%', 'border' = '40px white solid')
 )
 
 # The country search bar dropdown component
 country_dropdown <- dccDropdown(
-                    options = options,
-                    value = list(),
-                    id = "country_drop_down",
-                    multi = TRUE,
-                    style=list(
-                    "verticalAlign" = "middle",
-                    "border-width"= "10",
-                    "width" = "84%",
-                    "height" = "20px",
-                    "margin" = "3px", 
-                    'position' = 'relative',
-                    'left' = '15%',
-                    'top' = '11px'
-                    )
-                    )
+  options = options,
+  value = list(),
+  id = "country_drop_down",
+  multi = TRUE,
+  style=list(
+    "verticalAlign" = "middle",
+    "border-width"= "10",
+    "width" = "84%",
+    "height" = "20px",
+    "margin" = "3px", 
+    'position' = 'relative',
+    'left' = '15%',
+    'top' = '11px'
+  )
+)
 
 # The rendered map HTML graph component
 map <- htmlDiv(
-    list(
-        dccGraph(id = "map", figure=render_map(df))
-    )
+  list(
+    dccGraph(id = "map", figure=render_map(df))
+  )
 )
 
 # The top 10 result data table component
-table <- 
-          list(
+table <- list(
             htmlH4("Top 10 Countries", style = list('position' = 'relative', 'left' = '25%', 'top' = '10px')), 
             htmlBr(),
             htmlP(paste("Countries ranked according to your most important values."), style = list('position' = 'relative', 'left' = '6.5%', width = '250px')),
@@ -250,27 +249,28 @@ table <-
           )
         
 # The country metric trend plot dropdown component
+
 metrics_dropdown <- dccDropdown(
-              options=list(
-                list(label="Health", value="Life_expectancy"),
-                list(label="Freedom", value="Freedom"),
-                list(label="Economy", value="GDP_per_capita"),
-                list(label="Social Support", value="Social_support"),
-                list(label="Generosity", value="Generosity"),
-                list(label="Minimal Corruption", value="Corruption")
-              ),
-              value = "Freedom",
-              id = "yaxis_feature",
-              style = list(
-                "border-width"= "10",
-                "width" = "200px",
-                "height" = "20px",
-                #"margin" = "30px",
-                'position' = 'relative',
-                'bottom' = '20px',
-                'left' = '120px'
-              )
-            )
+  options=list(
+    list(label="Health", value="Life_expectancy"),
+    list(label="Freedom", value="Freedom"),
+    list(label="Economy", value="GDP_per_capita"),
+    list(label="Social Support", value="Social_support"),
+    list(label="Generosity", value="Generosity"),
+    list(label="Minimal Corruption", value="Corruption")
+  ),
+  value = "Freedom",
+  id = "yaxis_feature",
+  style = list(
+    "border-width"= "10",
+    "width" = "200px",
+    "height" = "20px",
+    #"margin" = "30px",
+    'position' = 'relative',
+    'bottom' = '20px',
+    'left' = '120px'
+  )
+)
 
 
 #' The Dash app layout
@@ -299,7 +299,7 @@ app$layout(
             list(
               htmlP(paste(description), style = list('position' = 'relative', 'left' = '6.5%'))
             ), style = list(padding = '0%', height = '10%', backgroundColor = '#ffd803b9', 'min-width' = 'unset', display='flex', 'vertical-align' = 'top')
-
+            
           )
         )
       ),
@@ -401,7 +401,7 @@ app$callback(
     df_update <- df_table %>% 
       select(Country, Rank)
     df_update[, "Happiness"] <- compute_happiness(slider_weights)
-
+    
     return <- list(render_map(df_update, drop_down_list), update_table(df_update))
   }
 )
@@ -443,7 +443,7 @@ app$callback(
 #'
 app$callback(
   output = output(id = "country_plot", property = "figure"),
-                
+  
   params = list(input(id = "yaxis_feature", property = "value"),
                 input(id = "country_drop_down", property = "value"),
                 input(id = "map", property = "selectedData")),
@@ -461,33 +461,33 @@ app$callback(
     # Remove _'s from y axis name on graph
     yaxis_title <- strsplit(ycol, "_")
     yaxis_title <- paste(yaxis_title[[1]], collapse = " ")
-
-
-country_plot <- plot_data %>%
+    
+    
+    country_plot <- plot_data %>%
       ggplot(aes(x = Year, color = Country)) + theme_few() +
-          geom_line(aes_string(y = ycol)) +
-          labs(y = yaxis_title, color = "")
-
-
+      geom_line(aes_string(y = ycol)) +
+      labs(y = yaxis_title, color = "")
+    
+    
     if(length(drop_down_list) == 0) {
       df_global <- df
       df_global$GlobalAverage = 'Global Average'
       country_plot <- df_global %>%
         ggplot(aes(x = Year, color = GlobalAverage)) +
-          stat_summary(fun = 'mean', aes_string(y = ycol), geom = 'line') + theme_few() +
-          labs(y = yaxis_title, color = "")
+        stat_summary(fun = 'mean', aes_string(y = ycol), geom = 'line') + theme_few() +
+        labs(y = yaxis_title, color = "")
     }
-
+    
     plotly_country <- ggplotly(country_plot)
     plotly_country <- plotly_country %>%
       layout(
         legend = list(
-        orientation = "h"#,
-        #x = -0.5
+          orientation = "h"#,
+          #x = -0.5
+        )
       )
-    )
-
-  return (plotly_country)
+    
+    return (plotly_country)
   }
 )
 
@@ -545,24 +545,24 @@ app$callback(
       df_bar_global$Year = as.factor(df_bar_global$Year)
       df_bar_global$Year <- fct_rev(df_bar_global$Year)
       df_bar_global$Score <- df_bar_global$mean_happiness
-
+      
       bar_fig_global <- df_bar_global %>%
-          ggplot(aes(x=mean_happiness, y=Year, fill=mean_happiness, label = Score)) +
-          geom_bar(stat = 'identity') +
-          coord_cartesian(xlim = c(2,8)) +
-          labs(x = "Mean Happiness Score",
-               title = "Global Average Happiness Score", fill = "Happiness") +
-               scale_fill_gradient(low = "khaki3", high = "yellow1") +
-               theme_bw() +
-               theme(axis.text = element_text(size = 10),
-                     legend.title = element_text(size = 9),
-                     legend.text = element_text(size = 8),
-                     axis.title.y = element_blank(),
-                     panel.border = element_blank())  
-
+        ggplot(aes(x=mean_happiness, y=Year, fill=mean_happiness, label = Score)) +
+        geom_bar(stat = 'identity') +
+        coord_cartesian(xlim = c(2,8)) +
+        labs(x = "Mean Happiness Score",
+             title = "Global Average Happiness Score", fill = "Happiness") +
+        scale_fill_gradient(low = "khaki3", high = "yellow1") +
+        theme_bw() +
+        theme(axis.text = element_text(size = 10),
+              legend.title = element_text(size = 9),
+              legend.text = element_text(size = 8),
+              axis.title.y = element_blank(),
+              panel.border = element_blank())  
+      
       return(ggplotly(bar_fig_global, tooltip = "Score"))
     }
-
+    
     if (nrow(country_list) == 1) {
       
       df_table_all <- df %>%
@@ -585,7 +585,7 @@ app$callback(
               axis.title.y = element_blank(),
               panel.border = element_blank())
       
-    return(ggplotly(bar_fig, tooltip = "label"))
+      return(ggplotly(bar_fig, tooltip = "label"))
       
     } else {
       # Bar plot for more than one country
