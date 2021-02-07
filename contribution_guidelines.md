@@ -1,7 +1,7 @@
 # Contributing to dash_of_spice-R
 
 ## Contribution Prerequisites
-We welcome all contributions and feature requests to this project! All contributors must abide by our [code of conduct](https://github.com/UBC-MDS/dash_of_spice/blob/main/CODE_OF_CONDUCT.md). 
+We welcome all contributions and feature requests to this project! All contributors must abide by our [code of conduct](https://github.com/UBC-MDS/dash_of_spice-R/blob/main/CODE_OF_CONDUCT.md). 
 
 When contributing to this project, please feel free to discuss the change you wish to make via issue, email, or any other method with the maintainers before making a change.
 
@@ -9,6 +9,7 @@ When contributing to this project, please feel free to discuss the change you wi
 * [What We Are Working On](#what-we-are-working-on)
 * [How to Submit Changes](#how-to-submit-changes)
 * [Posting Issues](#posting-issues)
+* [Setup Instructions](#setup-instructions)
 * [Maintaners](#maintaners)
 
 ## What We Are Working On
@@ -41,6 +42,28 @@ Steps to reproduce:
 
 Description of suggestions and potential fixes you would like to see.
 ```
+## Setup Instructions
+To run the app locally and reproduce yourself, fork this repo and follow the below steps in your local repository root:
+
+1. Create a new Python conda environment to run data wrangling scripts:
+`conda env create -f /env/happy_navvy.yaml`
+
+2. Activate the conda environment:
+`conda activate happy_navvy`
+
+3. (Optional) Execute the raw data pre-processing script
+`python src/preprocess_data.py -i data/raw -o data/processed/`
+
+4. (Optional) Execute the happiness computation weighting script
+`python src/compute_weights.py -i data/processed/tidy_happy.pkl -o data/processed/`
+
+5. Install R packages
+`Rscript init.R`
+
+6. Run Dash
+`Rscript app.R` 
+
+7. Run Dash Run! Comment out `app$run_server(host = '0.0.0.0')` in the app.R file (this is just for Heroku deployment) and switch it to `app$run_server(debug = F)`. Enter the local server URL into your browser: http://127.0.0.1:8050
 
 ## Maintaners
-This repository is currently maintained by @rachelywong, @ChadNeald, @cmmclaug, and @Saule-Atymtayeva. 
+This repository is currently maintained by [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug). 
