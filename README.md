@@ -19,7 +19,7 @@ The final dashboard showing the rankings of the rest of the countries and the bo
 
 <br />
 
-![Final Dashboard](assets/Screen-Recording-2021-01-30-at-8.gif)
+![Final Dashboard](assets/gif_demonstration.gif)
 
 ## What are we doing?
 At Dash of Spice, we aim to provide an easy-to-use application to individuals and families looking to immigrate to a country that aligns best with their values. Our dashboard utilizes a user's key values to suggest countries that would provide maximum happiness if they immigrated there.
