@@ -64,5 +64,6 @@ To run the app locally and reproduce yourself, fork this repo and follow the bel
 `Rscript app.R` 
 
 7. Run Dash Run! Enter the local server URL into your browser: http://127.0.0.1:8050
-## Maintainers
-This repository is currently maintained by @rachelywong, @ChadNeald, @cmmclaug, and @Saule-Atymtayeva. 
+
+## Maintaners
+This repository is currently maintained by [Rachel](https://github.com/rachelywong), [Saule](https://github.com/Saule-Atymtayeva), [Chad](https://github.com/ChadNeald), and [Craig](https://github.com/cmmclaug). 
